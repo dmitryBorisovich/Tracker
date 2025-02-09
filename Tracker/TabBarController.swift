@@ -4,13 +4,12 @@ final class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let trackersListViewController = TrackersListViewController()
-        trackersListViewController.tabBarItem = UITabBarItem(
+        let trackersViewController = TrackersViewController()
+        trackersViewController.tabBarItem = UITabBarItem(
             title: "Трекеры",
             image: UIImage(named: "tabTrackers"),
             selectedImage: nil
         )
-        let trackersNavigationController = UINavigationController(rootViewController: trackersListViewController)
         
         let statisticsViewController = StatisticsViewController()
         statisticsViewController.tabBarItem = UITabBarItem(
@@ -20,7 +19,7 @@ final class TabBarController: UITabBarController {
         )
         let statisticsNavigationController = UINavigationController(rootViewController: statisticsViewController)
 
-        self.viewControllers = [trackersNavigationController, statisticsNavigationController]
+        self.viewControllers = [trackersViewController, statisticsNavigationController]
 
         tabBar.isTranslucent = false
         tabBar.barTintColor = .tWhite
