@@ -11,6 +11,7 @@ final class TrackersViewController: UIViewController {
             ]
     
     private let cellIdentifier = "cell"
+    private let sectionHeaderIdentifier = "sectionHeader"
     
     private lazy var addTrackerButton: UIButton = {
         let addTrackerButton = UIButton.systemButton(
@@ -84,10 +85,16 @@ final class TrackersViewController: UIViewController {
         trackersCollection.dataSource = self
         trackersCollection.delegate = self
         trackersCollection.register(TrackersCollectionViewCell.self, forCellWithReuseIdentifier: cellIdentifier)
+        trackersCollection.register(
+            TrackersSupplementaryView.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: sectionHeaderIdentifier
+        )
         trackersCollection.backgroundColor = .tWhite
+        trackersCollection.contentInset = UIEdgeInsets(top: 16, left: 0, bottom: 0, right: 0)
         
         NSLayoutConstraint.activate([
-            trackersCollection.topAnchor.constraint(equalTo: headerStackView.bottomAnchor, constant: 34),
+            trackersCollection.topAnchor.constraint(equalTo: headerStackView.bottomAnchor, constant: 8),
             trackersCollection.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             trackersCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             trackersCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor)
@@ -130,6 +137,21 @@ extension TrackersViewController: UICollectionViewDataSource {
         else { return UICollectionViewCell() }
         return cell
     }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        viewForSupplementaryElementOfKind kind: String,
+                        at indexPath: IndexPath) -> UICollectionReusableView {
+        guard
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: UICollectionView.elementKindSectionHeader,
+                withReuseIdentifier: sectionHeaderIdentifier,
+                for: indexPath
+            ) as? TrackersSupplementaryView
+        else
+            { return UICollectionReusableView() }
+        
+        return header
+    }
 }
 
 extension TrackersViewController: UICollectionViewDelegateFlowLayout {
@@ -137,25 +159,32 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize { // Размер ячейки
-        CGSize(width: 167, height: 148)
+        let cellWidth = (collectionView.frame.width - 16 * 2 - 9) / 2
+        return CGSize(width: cellWidth, height: 148)
     }
     
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumLineSpacingForSectionAt section: Int) -> CGFloat { // Вертикальные отступы между ячейками
-        10
+        0
     }
     
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { // Горизонтальные отступы между ячейками
-        10
+        9
     }
     
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         insetForSectionAt section: Int) -> UIEdgeInsets { // Отступы от краев коллекции
-        UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16)
+        UIEdgeInsets(top: 16, left: 16, bottom: 12, right: 16)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        referenceSizeForHeaderInSection section: Int) -> CGSize {
+        CGSize(width: collectionView.frame.width, height: 18)
     }
     
 }
