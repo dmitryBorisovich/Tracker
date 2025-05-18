@@ -4,12 +4,6 @@ final class TrackersViewController: UIViewController {
     
     // MARK: - Properties
     
-    private let letters = [
-                "а", "б", "в", "г", "д", "е", "ё", "ж", "з", "и", "й", "к",
-                "л", "м", "н", "о", "п", "р", "с", "т", "у", "ф", "х", "ц",
-                "ч", "ш" , "щ", "ъ", "ы", "ь", "э", "ю", "я"
-            ]
-    
     private let cellIdentifier = "cell"
     private let sectionHeaderIdentifier = "sectionHeader"
     
@@ -30,6 +24,7 @@ final class TrackersViewController: UIViewController {
         datePicker.preferredDatePickerStyle = .compact
         datePicker.locale = Locale(identifier: "ru_RU")
         datePicker.translatesAutoresizingMaskIntoConstraints = false
+        datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
         return datePicker
     }()
     
@@ -66,7 +61,10 @@ final class TrackersViewController: UIViewController {
     }()
     
     var categories: [TrackerCategory]?
+    var visibleCategories: [TrackerCategory]?
     var completedTrackers: [TrackerRecord]?
+    
+    private let mockTrackers = MockTrackers.shared
     
     // MARK: - Life-cycle
     
@@ -74,6 +72,9 @@ final class TrackersViewController: UIViewController {
         super.viewDidLoad()
         setUpNavigationBar()
         setUpScreen()
+//        setupCollectionViewBackground()
+        
+        categories = mockTrackers.categories
     }
     
     // MARK: - Methods
@@ -120,21 +121,88 @@ final class TrackersViewController: UIViewController {
         ])
     }
     
-    @objc private func addTrackerButtonPressed() {
+    private func updateFilteredTrackers() {
+        visibleCategories = categories
         
     }
+    
+    @objc private func addTrackerButtonPressed() {
+        let creatingTrackerVC = CreatingTrackerViewController()
+        let navigationController = UINavigationController(rootViewController: creatingTrackerVC)
+        navigationController.modalPresentationStyle = .pageSheet
+        present(navigationController, animated: true)
+    }
+    
+    @objc private func dateChanged() {
+        
+    }
+    
+//    private func createPlaceholder() -> UIView {
+//        let view = UIView()
+//        
+//        let imageView = UIImageView(image: UIImage(named: "starPlaceholder"))
+//        let label = UILabel()
+//        
+//        label.font = .systemFont(ofSize: 12, weight: .medium)
+//        label.text = "Что будем отслеживать?"
+//        imageView.translatesAutoresizingMaskIntoConstraints = false
+//        NSLayoutConstraint.activate([
+//            imageView.widthAnchor.constraint(equalToConstant: 80),
+//            imageView.heightAnchor.constraint(equalToConstant: 80)
+//        ])
+//        
+//        let stackView = UIStackView(arrangedSubviews: [imageView, label])
+//        stackView.axis = .vertical
+//        stackView.spacing = 8
+//        stackView.alignment = .center
+//        stackView.translatesAutoresizingMaskIntoConstraints = false
+//        
+//        view.addSubview(stackView)
+//        
+//        NSLayoutConstraint.activate([
+//            stackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+//            stackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+//            stackView.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
+//            stackView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16)
+//        ])
+//        
+//        return view
+//    }
+//    
+//    private func setupCollectionViewBackground() {
+//        if categories?.isEmpty ?? true {
+//            trackersCollection.backgroundView = createPlaceholder()
+//        } else {
+//            trackersCollection.backgroundView = nil
+//        }
+//    }
 }
 
 extension TrackersViewController: UICollectionViewDataSource {
     
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        categories?.count ?? 0
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        3
+        categories?[section].trackers.count ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? TrackersCollectionViewCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIdentifier, for: indexPath) as? TrackersCollectionViewCell,
+            let tracker = categories?[indexPath.section].trackers[indexPath.row]
         else { return UICollectionViewCell() }
+        
+        let daysCompleted = countTrackerRecords(for: tracker.id)
+        
+        cell.delegate = self
+        cell.id = tracker.id
+        cell.trackerNameLabel.text = tracker.name
+        cell.colorView.backgroundColor = tracker.color
+        cell.emojiLabel.text = tracker.emoji
+        cell.changeDaysCounter(for: daysCompleted)
+        
         return cell
     }
     
@@ -149,6 +217,8 @@ extension TrackersViewController: UICollectionViewDataSource {
             ) as? TrackersSupplementaryView
         else
             { return UICollectionReusableView() }
+        
+        header.titleLabel.text = categories?[indexPath.section].name
         
         return header
     }
@@ -186,5 +256,21 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
                         referenceSizeForHeaderInSection section: Int) -> CGSize {
         CGSize(width: collectionView.frame.width, height: 18)
     }
+}
+
+extension TrackersViewController: TrackersCollectionViewCellDelegate {
+    func checkDate() -> Bool {
+        datePicker.date > Date() ? false : true
+    }
+    
+    func addTrackerRecord() {
+        <#code#>
+    }
+    
+    func countTrackerRecords(for id: UUID) -> Int {
+        guard let completedTrackers else { return 0 }
+        return completedTrackers.filter { $0.id == id }.count
+    }
+    
     
 }

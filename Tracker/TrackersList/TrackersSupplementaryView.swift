@@ -1,7 +1,7 @@
 import UIKit
 
 final class TrackersSupplementaryView: UICollectionReusableView {
-    private lazy var titleLabel: UILabel = {
+    lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 19, weight: .bold)
         label.textColor = .tBlack

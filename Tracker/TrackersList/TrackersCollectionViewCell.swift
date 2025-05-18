@@ -1,10 +1,25 @@
 import UIKit
 
+protocol TrackersCollectionViewCellDelegate: AnyObject {
+    func checkDate() -> Bool
+    func addTrackerRecord()
+    func countTrackerRecords(for id: UUID) -> Int
+}
+
 final class TrackersCollectionViewCell: UICollectionViewCell {
     
-    private lazy var colorView: UIView = {
+    lazy var trackerNameLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 12, weight: .medium)
+//        label.text = "Пройти урок по Swift"
+        label.textColor = .tWhite
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    lazy var colorView: UIView = {
         let colorView = UIView()
-        colorView.backgroundColor = .tGreen
+//        colorView.backgroundColor = .tGreen
         colorView.layer.cornerRadius = 16
         colorView.layer.borderWidth = 1
         colorView.layer.borderColor = UIColor(named: "tGrayAlpha30")?.cgColor
@@ -12,11 +27,18 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return colorView
     }()
     
-    private lazy var trackerNameLabel: UILabel = {
+    lazy var emojiLabel: UILabel = {
+        let emojiLabel = UILabel()
+        emojiLabel.font = UIFont.systemFont(ofSize: 14)
+//        emojiLabel.text = "😪"
+        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        return emojiLabel
+    }()
+    
+    lazy var daysCounterLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.text = "Пройти урок по Swift"
-        label.textColor = .tWhite
+        label.text = "0 дней"
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -29,22 +51,6 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return emojiView
     }()
     
-    private lazy var emojiLabel: UILabel = {
-        let emojiLabel = UILabel()
-        emojiLabel.font = UIFont.systemFont(ofSize: 14)
-        emojiLabel.text = "😪"
-        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
-        return emojiLabel
-    }()
-    
-    private lazy var daysCounterLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .medium)
-        label.text = "0 дней"
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     private lazy var addDayButton: UIButton = {
         let button = UIButton.systemButton(
             with: UIImage(named: "plusButton") ?? UIImage(),
@@ -55,6 +61,10 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    
+    var id: UUID?
+    
+    weak var delegate: TrackersCollectionViewCellDelegate?
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -105,5 +115,38 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    @objc private func addDayButtonPressed() {}
+    @objc private func addDayButtonPressed() {
+        guard
+            let delegate,
+            let id,
+            delegate.checkDate()
+        else { return }
+        
+        delegate.addTrackerRecord()
+        
+        let numberOfDays = delegate.countTrackerRecords(for: id)
+        changeDaysCounter(for: numberOfDays)
+    }
+    
+    func changeDaysCounter(for number: Int) {
+        var counterText: String
+        
+        let lastDigit = number % 10
+        let lastTwoDigits = number % 100
+        
+        if lastTwoDigits >= 11 && lastTwoDigits <= 19 {
+            counterText = "\(number) дней"
+        }
+        
+        switch lastDigit {
+        case 1:
+            counterText = "\(number) день"
+        case 2...4:
+            counterText = "\(number) дня"
+        default:
+            counterText = "\(number) дней"
+        }
+        
+        daysCounterLabel.text = counterText
+    }
 }
