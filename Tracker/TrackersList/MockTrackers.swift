@@ -26,7 +26,7 @@ final class MockTrackers {
             trackers: [
                 Tracker(id: UUID(),
                         name: "Прочесть 10 страниц",
-                        color: .green,
+                        color: .tGreen,
                         emoji: "📕",
                         schedule: [DaysOfWeek.wednesday, DaysOfWeek.saturday])
             ]

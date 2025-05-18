@@ -62,7 +62,7 @@ final class TrackersViewController: UIViewController {
     
     var categories: [TrackerCategory]?
     var visibleCategories: [TrackerCategory]?
-    var completedTrackers: [TrackerRecord]?
+    var completedTrackers: Set<TrackerRecord> = []
     
     private let mockTrackers = MockTrackers.shared
     
@@ -200,6 +200,7 @@ extension TrackersViewController: UICollectionViewDataSource {
         cell.id = tracker.id
         cell.trackerNameLabel.text = tracker.name
         cell.colorView.backgroundColor = tracker.color
+        cell.addDayButton.tintColor = tracker.color
         cell.emojiLabel.text = tracker.emoji
         cell.changeDaysCounter(for: daysCompleted)
         
@@ -263,13 +264,19 @@ extension TrackersViewController: TrackersCollectionViewCellDelegate {
         datePicker.date > Date() ? false : true
     }
     
-    func addTrackerRecord() {
-        <#code#>
+    func toggleTrackerRecord(for id: UUID) {
+        let today = datePicker.date
+        if let index = completedTrackers.firstIndex(
+            where: { $0.id == id && Calendar.current.isDate($0.date, inSameDayAs: today) }
+        ) {
+            completedTrackers.remove(at: index)
+        } else {
+            completedTrackers.append(TrackerRecord(id: id, date: today))
+        }
     }
     
     func countTrackerRecords(for id: UUID) -> Int {
-        guard let completedTrackers else { return 0 }
-        return completedTrackers.filter { $0.id == id }.count
+        completedTrackers.filter { $0.id == id }.count
     }
     
     

@@ -2,7 +2,7 @@ import UIKit
 
 protocol TrackersCollectionViewCellDelegate: AnyObject {
     func checkDate() -> Bool
-    func addTrackerRecord()
+    func toggleTrackerRecord(for id: UUID)
     func countTrackerRecords(for id: UUID) -> Int
 }
 
@@ -19,7 +19,6 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     
     lazy var colorView: UIView = {
         let colorView = UIView()
-//        colorView.backgroundColor = .tGreen
         colorView.layer.cornerRadius = 16
         colorView.layer.borderWidth = 1
         colorView.layer.borderColor = UIColor(named: "tGrayAlpha30")?.cgColor
@@ -51,13 +50,14 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return emojiView
     }()
     
-    private lazy var addDayButton: UIButton = {
-        let button = UIButton.systemButton(
-            with: UIImage(named: "plusButton") ?? UIImage(),
-            target: nil,
-            action: #selector(addDayButtonPressed)
-        )
-        button.tintColor = .tGreen
+    lazy var addDayButton: UIButton = {
+        let button = UIButton()
+        button.layer.cornerRadius = 17
+        button.clipsToBounds = true
+        button.setImage(UIImage(named: "plusButton")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.setImage(UIImage(named: "completedButton")?.withRenderingMode(.alwaysOriginal), for: .selected)
+        button.backgroundColor = .clear
+        button.addTarget(self, action: #selector(addDayButtonPressed), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -115,17 +115,34 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         ])
     }
     
-    @objc private func addDayButtonPressed() {
+    @objc private func addDayButtonPressed(_ sender: UIButton) {
         guard
             let delegate,
             let id,
             delegate.checkDate()
-        else { return }
+        else {
+            return
+        }
         
-        delegate.addTrackerRecord()
+        sender.isSelected.toggle()
+        
+        if sender.isSelected {
+            sender.backgroundColor = sender.tintColor
+        } else {
+            sender.backgroundColor = .clear
+        }
+        
+//        sender.backgroundColor = sender.isSelected ?
+//        color.withAlphaComponent(0.3) :
+//        color.withAlphaComponent(1)
+        
+        delegate.toggleTrackerRecord(for: id)
+        
+        print(sender.isSelected)
         
         let numberOfDays = delegate.countTrackerRecords(for: id)
         changeDaysCounter(for: numberOfDays)
+        
     }
     
     func changeDaysCounter(for number: Int) {
