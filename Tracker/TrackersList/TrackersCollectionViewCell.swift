@@ -4,20 +4,22 @@ protocol TrackersCollectionViewCellDelegate: AnyObject {
     func checkDate() -> Bool
     func toggleTrackerRecord(for id: UUID)
     func countTrackerRecords(for id: UUID) -> Int
+    func isTrackerCompletedToday(id: UUID) -> Bool
 }
 
 final class TrackersCollectionViewCell: UICollectionViewCell {
     
-    lazy var trackerNameLabel: UILabel = {
+    //MARK: - Properties
+    
+    private lazy var trackerNameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
-//        label.text = "Пройти урок по Swift"
         label.textColor = .tWhite
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
-    lazy var colorView: UIView = {
+    private lazy var colorView: UIView = {
         let colorView = UIView()
         colorView.layer.cornerRadius = 16
         colorView.layer.borderWidth = 1
@@ -26,15 +28,14 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return colorView
     }()
     
-    lazy var emojiLabel: UILabel = {
+    private lazy var emojiLabel: UILabel = {
         let emojiLabel = UILabel()
         emojiLabel.font = UIFont.systemFont(ofSize: 14)
-//        emojiLabel.text = "😪"
         emojiLabel.translatesAutoresizingMaskIntoConstraints = false
         return emojiLabel
     }()
     
-    lazy var daysCounterLabel: UILabel = {
+    private lazy var daysCounterLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.text = "0 дней"
@@ -50,7 +51,7 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return emojiView
     }()
     
-    lazy var addDayButton: UIButton = {
+    private lazy var addDayButton: UIButton = {
         let button = UIButton()
         button.layer.cornerRadius = 17
         button.clipsToBounds = true
@@ -62,9 +63,11 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
-    var id: UUID?
+    private var trackerId: UUID?
     
     weak var delegate: TrackersCollectionViewCellDelegate?
+    
+    //MARK: - Initialization
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -75,6 +78,8 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    //MARK: - Methods
     
     private func setUpCell() {
         contentView.addSubview(colorView)
@@ -118,31 +123,40 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     @objc private func addDayButtonPressed(_ sender: UIButton) {
         guard
             let delegate,
-            let id,
+            let trackerId,
             delegate.checkDate()
         else {
             return
         }
         
-        sender.isSelected.toggle()
+        delegate.toggleTrackerRecord(for: trackerId)
         
-        if sender.isSelected {
-            sender.backgroundColor = sender.tintColor
-        } else {
-            sender.backgroundColor = .clear
-        }
+        updateButtonState()
         
-//        sender.backgroundColor = sender.isSelected ?
-//        color.withAlphaComponent(0.3) :
-//        color.withAlphaComponent(1)
-        
-        delegate.toggleTrackerRecord(for: id)
-        
-        print(sender.isSelected)
-        
-        let numberOfDays = delegate.countTrackerRecords(for: id)
+        let numberOfDays = delegate.countTrackerRecords(for: trackerId)
         changeDaysCounter(for: numberOfDays)
+    }
+    
+    private func updateButtonState() {
+        guard let trackerId else { return }
         
+        let isCompletedToday = delegate?.isTrackerCompletedToday(id: trackerId) ?? false
+        addDayButton.isSelected = isCompletedToday
+        addDayButton.backgroundColor = isCompletedToday ? addDayButton.tintColor : .clear
+    }
+    
+    func configureCell(with tracker: Tracker) {
+        self.trackerId = tracker.id
+        
+        trackerNameLabel.text = tracker.name
+        colorView.backgroundColor = tracker.color
+        addDayButton.tintColor = tracker.color
+        emojiLabel.text = tracker.emoji
+        
+        updateButtonState()
+        
+        let numberOfDays = delegate?.countTrackerRecords(for: tracker.id) ?? 0
+        changeDaysCounter(for: numberOfDays)
     }
     
     func changeDaysCounter(for number: Int) {

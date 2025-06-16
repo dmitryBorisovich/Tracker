@@ -28,7 +28,7 @@ final class MockTrackers {
                         name: "Прочесть 10 страниц",
                         color: .tGreen,
                         emoji: "📕",
-                        schedule: [DaysOfWeek.wednesday, DaysOfWeek.saturday])
+                        schedule: [DaysOfWeek.monday, DaysOfWeek.wednesday, DaysOfWeek.saturday])
             ]
         )
     ]
