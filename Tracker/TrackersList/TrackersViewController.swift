@@ -292,7 +292,7 @@ extension TrackersViewController: UITextFieldDelegate {
 
 extension TrackersViewController: TrackersCollectionViewCellDelegate {
     func checkDate() -> Bool {
-        datePicker.date > Date() ? false : true
+        currentDate <= Date()
     }
     
     func toggleTrackerRecord(for id: UUID) {
