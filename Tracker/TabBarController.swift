@@ -3,24 +3,30 @@ import UIKit
 final class TabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let trackersViewController = TrackersViewController()
-        trackersViewController.tabBarItem = UITabBarItem(
+        setupViewControllers()
+        configureTabBarAppearance()
+    }
+    
+    private func setupViewControllers() {
+        let trackersVC = TrackersViewController()
+        trackersVC.tabBarItem = UITabBarItem(
             title: "Трекеры",
             image: UIImage(named: "tabTrackers"),
             selectedImage: nil
         )
         
-        let statisticsViewController = StatisticsViewController()
-        statisticsViewController.tabBarItem = UITabBarItem(
+        let statisticsVC = StatisticsViewController()
+        statisticsVC.tabBarItem = UITabBarItem(
             title: "Статистика",
             image: UIImage(named: "tabStatistics"),
             selectedImage: nil
         )
-        let statisticsNavigationController = UINavigationController(rootViewController: statisticsViewController)
-
-        self.viewControllers = [trackersViewController, statisticsNavigationController]
-
+        let statisticsNC = UINavigationController(rootViewController: statisticsVC)
+        
+        viewControllers = [trackersVC, statisticsNC]
+    }
+    
+    private func configureTabBarAppearance() {
         tabBar.isTranslucent = false
         tabBar.barTintColor = .tWhite
         tabBar.backgroundColor = .tWhite

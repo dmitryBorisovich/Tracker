@@ -1,6 +1,6 @@
 import Foundation
 
-//TODO: Сделать единый VC для создания привычки/события
+// TODO: Сделать единый VC для создания привычки/события
 protocol TrackerCreatingDelegate: AnyObject {
     func didCreateNewTracker(in category: TrackerCategory)
 }

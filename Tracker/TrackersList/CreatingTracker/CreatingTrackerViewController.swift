@@ -2,6 +2,8 @@ import UIKit
 
 final class CreatingTrackerViewController: UIViewController {
     
+    // MARK: - UI
+    
     private lazy var habitButton: UIButton = {
         let button = UIButton()
         button.setTitle("Привычка", for: .normal)
@@ -50,12 +52,18 @@ final class CreatingTrackerViewController: UIViewController {
         return stackView
     }()
     
+    // MARK: - Properties
+    
     weak var delegate: TrackerCreatingDelegate?
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpScreen()
     }
+    
+    // MARK: - Methods
     
     private func setUpScreen() {
         navigationItem.title = "Создание трекера"

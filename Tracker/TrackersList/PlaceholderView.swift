@@ -8,7 +8,7 @@ final class PlaceholderView: UIView {
     private let imageView: UIImageView
     private let titleLabel: UILabel
     
-    // MARK: - Initialization
+    // MARK: - Init
     
     init(title: String) {
         imageView = UIImageView(image: UIImage(named: "starPlaceholder"))

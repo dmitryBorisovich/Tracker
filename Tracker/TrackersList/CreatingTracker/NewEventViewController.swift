@@ -2,7 +2,7 @@ import UIKit
 
 final class NewEventViewController: UIViewController {
     
-    //MARK: - Properties
+    // MARK: - UI
     
     private lazy var eventNameTextField: UITextField = {
         let textField = UITextField()
@@ -81,6 +81,8 @@ final class NewEventViewController: UIViewController {
         return stackView
     }()
     
+    // MARK: - Properties
+    
     private let eventParamsCellIdentifier = "eventParamsCell"
     private let cellName = "Категория"
     private var selectedCategory: String?
@@ -88,14 +90,14 @@ final class NewEventViewController: UIViewController {
     
     weak var delegate: TrackerCreatingDelegate?
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpScreen()
     }
     
-    //MARK: - Methods
+    // MARK: - Methods
     
     private func setUpScreen() {
         setUpNavigationBar()
@@ -168,7 +170,7 @@ final class NewEventViewController: UIViewController {
     }
 }
 
-// MARK: - Extensions
+// MARK: - UITableViewDataSource
 
 extension NewEventViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -194,6 +196,8 @@ extension NewEventViewController: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
+
 extension NewEventViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 75
@@ -204,19 +208,7 @@ extension NewEventViewController: UITableViewDelegate {
     }
 }
 
-extension NewEventViewController: CategoryViewControllerDelegate {
-    func didSelectCategory(name: String) {
-        selectedCategory = name
-        eventParamsTableView.reloadData()
-        updateCreateButtonState()
-    }
-    
-    private func showCategoryViewController() {
-        let categoryVC = CategoryViewController(selectedCategoryName: selectedCategory)
-        categoryVC.delegate = self
-        navigationController?.pushViewController(categoryVC, animated: true)
-    }
-}
+// MARK: - UITextFieldDelegate
 
 extension NewEventViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
@@ -251,5 +243,21 @@ extension NewEventViewController: UITextFieldDelegate {
         let isEnabled = (trackerName?.isEmpty == false) && (selectedCategory != nil)
         createButton.isEnabled = isEnabled
         createButton.backgroundColor = isEnabled ? .tBlack : .tGray
+    }
+}
+
+// MARK: - CategoryViewControllerDelegate
+
+extension NewEventViewController: CategoryViewControllerDelegate {
+    func didSelectCategory(name: String) {
+        selectedCategory = name
+        eventParamsTableView.reloadData()
+        updateCreateButtonState()
+    }
+    
+    private func showCategoryViewController() {
+        let categoryVC = CategoryViewController(selectedCategoryName: selectedCategory)
+        categoryVC.delegate = self
+        navigationController?.pushViewController(categoryVC, animated: true)
     }
 }

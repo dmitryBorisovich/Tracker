@@ -2,7 +2,7 @@ import UIKit
 
 final class NewHabitViewController: UIViewController {
     
-    //MARK: - Properties
+    // MARK: - UI
     
     private lazy var habitNameTextField: UITextField = {
         let textField = UITextField()
@@ -79,6 +79,8 @@ final class NewHabitViewController: UIViewController {
         return stackView
     }()
     
+    // MARK: - Properties
+    
     private let habitParamsCellIdentifier = "habitParamsCell"
     private let cellNames = [
         "Категория",
@@ -91,14 +93,14 @@ final class NewHabitViewController: UIViewController {
     
     weak var delegate: TrackerCreatingDelegate?
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpScreen()
     }
     
-    //MARK: - Methods
+    // MARK: - Methods
     
     private func setUpScreen() {
         setUpNavigationBar()
@@ -174,7 +176,7 @@ final class NewHabitViewController: UIViewController {
     }
 }
 
-//MARK: - Extensions
+// MARK: - UITableViewDataSource
 
 extension NewHabitViewController: UITableViewDataSource {
     
@@ -221,6 +223,8 @@ extension NewHabitViewController: UITableViewDataSource {
     }
 }
 
+// MARK: - UITableViewDelegate
+
 extension NewHabitViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 75 }
@@ -235,6 +239,38 @@ extension NewHabitViewController: UITableViewDelegate {
         }
     }
 }
+
+// MARK: - UITextFieldDelegate
+
+extension NewHabitViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        let currentText = textField.text ?? ""
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
+        
+        if updatedText.count > 38 {
+            textStatusLabel.text = "Ограничение 38 символов"
+            textStatusLabel.isHidden = false
+            return false
+        }
+        
+        textStatusLabel.text = nil
+        textStatusLabel.isHidden = true
+        return true
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        trackerName = textField.text
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        trackerName = textField.text
+    }
+}
+
+// MARK: - ScheduleViewControllerDelegate
 
 extension NewHabitViewController: ScheduleViewControllerDelegate {
     func didSelectDays(days: [DaysOfWeek]) {
@@ -265,6 +301,8 @@ extension NewHabitViewController: ScheduleViewControllerDelegate {
     }
 }
 
+// MARK: - CategoryViewControllerDelegate
+
 extension NewHabitViewController: CategoryViewControllerDelegate {
     func didSelectCategory(name: String) {
         selectedCategory = name
@@ -275,33 +313,5 @@ extension NewHabitViewController: CategoryViewControllerDelegate {
         let categoryVC = CategoryViewController(selectedCategoryName: selectedCategory)
         categoryVC.delegate = self
         navigationController?.pushViewController(categoryVC, animated: true)
-    }
-}
-
-extension NewHabitViewController: UITextFieldDelegate {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        let currentText = textField.text ?? ""
-        guard let stringRange = Range(range, in: currentText) else { return false }
-        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
-        
-        if updatedText.count > 38 {
-            textStatusLabel.text = "Ограничение 38 символов"
-            textStatusLabel.isHidden = false
-            return false
-        }
-        
-        textStatusLabel.text = nil
-        textStatusLabel.isHidden = true
-        return true
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        trackerName = textField.text
-        textField.resignFirstResponder()
-        return true
-    }
-    
-    func textFieldDidEndEditing(_ textField: UITextField) {
-        trackerName = textField.text
     }
 }

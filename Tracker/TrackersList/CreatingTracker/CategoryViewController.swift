@@ -6,7 +6,7 @@ protocol CategoryViewControllerDelegate: AnyObject {
 
 final class CategoryViewController: UIViewController {
     
-    //MARK: - UI
+    // MARK: - UI
     
     private lazy var addCategoryButton: UIButton = {
         let button = UIButton()
@@ -25,7 +25,6 @@ final class CategoryViewController: UIViewController {
     private lazy var categoryTableView: UITableView = {
         let tableView = UITableView(frame: view.bounds, style: .insetGrouped)
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-//        tableView.isScrollEnabled = false
         
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .singleLine
@@ -33,7 +32,7 @@ final class CategoryViewController: UIViewController {
         return tableView
     }()
     
-    //MARK: - Properties
+    // MARK: - Properties
     
     private let mockTrackers = MockTrackers.shared
     private let categoryCellIdentifier = "dayOfWeek"
@@ -67,7 +66,7 @@ final class CategoryViewController: UIViewController {
     
     weak var delegate: CategoryViewControllerDelegate?
     
-    //MARK: - Initialization
+    // MARK: - Init
     
     init(selectedCategoryName: String? = nil) {
         self.selectedCategoryName = selectedCategoryName
@@ -78,7 +77,7 @@ final class CategoryViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,7 +88,7 @@ final class CategoryViewController: UIViewController {
         }
     }
     
-    //MARK: - Methods
+    // MARK: - Methods
     
     private func setUpScreen() {
         setUpNavigationBar()
@@ -123,11 +122,11 @@ final class CategoryViewController: UIViewController {
     }
     
     @objc private func addCategoryButtonPressed() {
-        //TODO: Реализовать логику добавления новой категории (спринт 15)
+        // TODO: Реализовать логику добавления новой категории (спринт 15)
     }
 }
 
-// MARK: - Extensions
+// MARK: - UITableViewDataSource
 
 extension CategoryViewController: UITableViewDataSource {
     
@@ -161,6 +160,8 @@ extension CategoryViewController: UITableViewDataSource {
 
     }
 }
+
+// MARK: - UITableViewDelegate
 
 extension CategoryViewController: UITableViewDelegate {
     

@@ -9,7 +9,7 @@ protocol TrackersCollectionViewCellDelegate: AnyObject {
 
 final class TrackersCollectionViewCell: UICollectionViewCell {
     
-    //MARK: - Properties
+    // MARK: - UI
     
     private lazy var trackerNameLabel: UILabel = {
         let label = UILabel()
@@ -63,11 +63,13 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return button
     }()
     
+    // MARK: - Properties
+    
     private var trackerId: UUID?
     
     weak var delegate: TrackersCollectionViewCellDelegate?
     
-    //MARK: - Initialization
+    // MARK: - Init
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -79,7 +81,7 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Methods
+    // MARK: - Methods
     
     private func setUpCell() {
         contentView.addSubview(colorView)

@@ -6,7 +6,7 @@ protocol ScheduleViewControllerDelegate: AnyObject {
 
 final class ScheduleViewController: UIViewController {
     
-    private let dayCellIdentifier = "dayOfWeek"
+    // MARK: - UI
     
     private lazy var completeButton: UIButton = {
         let button = UIButton()
@@ -33,14 +33,21 @@ final class ScheduleViewController: UIViewController {
         return tableView
     }()
     
+    // MARK: - Properties
+    
+    private let dayCellIdentifier = "dayOfWeek"
     var selectedDays: Set<DaysOfWeek> = []
     
     weak var delegate: ScheduleViewControllerDelegate?
+    
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpScreen()
     }
+    
+    // MARK: - Methods
     
     private func setUpScreen() {
         setUpNavigationBar()
@@ -88,6 +95,8 @@ final class ScheduleViewController: UIViewController {
     }
 }
 
+// MARK: - UITableViewDataSource
+
 extension ScheduleViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -120,6 +129,8 @@ extension ScheduleViewController: UITableViewDataSource {
         return cell
     }
 }
+
+// MARK: - UITableViewDelegate
 
 extension ScheduleViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 75 }

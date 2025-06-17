@@ -2,10 +2,7 @@ import UIKit
 
 final class TrackersViewController: UIViewController {
     
-    // MARK: - Properties
-    
-    private let cellIdentifier = "cell"
-    private let sectionHeaderIdentifier = "sectionHeader"
+    // MARK: - UI
     
     private lazy var addTrackerButton: UIButton = {
         let addTrackerButton = UIButton.systemButton(
@@ -70,13 +67,22 @@ final class TrackersViewController: UIViewController {
         return collectionView
     }()
     
+    // MARK: - Properties
+    
+    private let mockTrackers = MockTrackers.shared
+    
+    private let cellIdentifier = "cell"
+    private let sectionHeaderIdentifier = "sectionHeader"
+    
+    private var currentDate: Date {
+        Calendar.current.startOfDay(for: datePicker.date)
+    }
+    
     var categories: [TrackerCategory] = []
     var visibleCategories: [TrackerCategory] = []
     var completedTrackers: Set<TrackerRecord> = []
     
-    private let mockTrackers = MockTrackers.shared
-    
-    // MARK: - Life-cycle
+    // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -189,6 +195,8 @@ final class TrackersViewController: UIViewController {
     }
 }
 
+// MARK: - UICollectionViewDataSource
+
 extension TrackersViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -234,6 +242,8 @@ extension TrackersViewController: UICollectionViewDataSource {
     }
 }
 
+// MARK: - UICollectionViewDelegateFlowLayout
+
 extension TrackersViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView,
@@ -268,15 +278,25 @@ extension TrackersViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+// MARK: - UITextFieldDelegate
+
+extension TrackersViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        reloadVisibleCategories()
+        return true
+    }
+}
+
+// MARK: - TrackersCollectionViewCellDelegate
+
 extension TrackersViewController: TrackersCollectionViewCellDelegate {
     func checkDate() -> Bool {
         datePicker.date > Date() ? false : true
     }
     
     func toggleTrackerRecord(for id: UUID) {
-        let calendar = Calendar.current
-        let date = calendar.startOfDay(for: datePicker.date)
-        let record = TrackerRecord(id: id, date: date)
+        let record = TrackerRecord(id: id, date: currentDate)
         
         if completedTrackers.contains(record) {
             completedTrackers.remove(record)
@@ -290,12 +310,14 @@ extension TrackersViewController: TrackersCollectionViewCellDelegate {
     }
     
     func isTrackerCompletedToday(id: UUID) -> Bool {
-        let today = Calendar.current.startOfDay(for: datePicker.date)
+        let today = currentDate
         return completedTrackers.contains { record in
             record.id == id && Calendar.current.isDate(record.date, inSameDayAs: today)
         }
     }
 }
+
+// MARK: - TrackerCreatingDelegate
 
 extension TrackersViewController: TrackerCreatingDelegate {
     func didCreateNewTracker(in category: TrackerCategory) {
@@ -316,13 +338,5 @@ extension TrackersViewController: TrackerCreatingDelegate {
         }
         
         reloadVisibleCategories()
-    }
-}
-
-extension TrackersViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        textField.resignFirstResponder()
-        reloadVisibleCategories()
-        return true
     }
 }
