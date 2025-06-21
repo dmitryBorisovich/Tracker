@@ -82,6 +82,7 @@ final class NewHabitViewController: UIViewController {
     private lazy var trackerParamsCollection: UICollectionView = {
         let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
         collection.isScrollEnabled = false
+        collection.allowsMultipleSelection = true
         collection.translatesAutoresizingMaskIntoConstraints = false
         return collection
     }()
@@ -113,6 +114,9 @@ final class NewHabitViewController: UIViewController {
     private var selectedCategory: String?
     private var scheduleLabel: String?
     private var trackerName: String?
+    
+    private var selectedEmojiIndex: IndexPath?
+    private var selectedColorIndex: IndexPath?
     
     weak var delegate: TrackerCreatingDelegate?
     
@@ -322,13 +326,11 @@ extension NewHabitViewController: UITextFieldDelegate {
         
         if updatedText.count > 38 {
             textStatusLabel.text = "Ограничение 38 символов"
-//            textStatusLabel.isHidden = false
             textFieldStackView.spacing = 8
             return false
         }
         
         textStatusLabel.text = nil
-//        textStatusLabel.isHidden = true
         textFieldStackView.spacing = 0
         return true
     }
@@ -387,42 +389,73 @@ extension NewHabitViewController: UICollectionViewDataSource {
         
         return header
     }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as? TrackerParamsCollectionViewCell
+        
+        if indexPath.section == 0 {
+            if let lastIndex = selectedEmojiIndex, lastIndex != indexPath {
+                collectionView.deselectItem(at: lastIndex, animated: true)
+                let lastSelectedCell = collectionView.cellForItem(
+                    at: lastIndex
+                ) as? TrackerParamsCollectionViewCell
+                lastSelectedCell?.didDeselectCell()
+            }
+            selectedEmojiIndex = indexPath
+            cell?.didSelectCell()
+        } else {
+            if let lastIndex = selectedColorIndex, lastIndex != indexPath {
+                collectionView.deselectItem(at: lastIndex, animated: true)
+                let lastSelectedCell = collectionView.cellForItem(at: lastIndex) as? TrackerParamsCollectionViewCell
+                lastSelectedCell?.didDeselectCell()
+            }
+            selectedColorIndex = indexPath
+            cell?.didSelectCell()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+        let cell = collectionView.cellForItem(at: indexPath) as? TrackerParamsCollectionViewCell
+        cell?.didDeselectCell()
+        
+        if indexPath.section == 0 {
+            selectedEmojiIndex = nil
+        } else {
+            selectedColorIndex = nil
+        }
+    }
 }
 
 // MARK: - UICollectionViewDelegateFlowLayout
 
 extension NewHabitViewController: UICollectionViewDelegateFlowLayout {
-    
+    // Размер ячейки
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize { // Размер ячейки
-//        let cellSide = 52
-//        let availableSpace = Int(collectionView.frame.width - 16 * 2)
-//        if availableSpace < (cellSide * 6) {
-//            cellSide = 40
-//        }
-//        return CGSize(width: cellSide, height: cellSide)
-        
-        let availableWidth = collectionView.bounds.width - 32 // 16+16 отступы
-            let cellWidth = (availableWidth - 5 * 5) / 6 // 5 промежутков между 6 ячейками
-            return CGSize(width: cellWidth, height: cellWidth)
+                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let availableWidth = collectionView.bounds.width - 37
+        let cellSide = (availableWidth - 5 * 5) / 6
+        return CGSize(width: cellSide, height: cellSide)
     }
     
+    // Вертикальные отступы между ячейками
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
-                        minimumLineSpacingForSectionAt section: Int) -> CGFloat { // Вертикальные отступы между ячейками
+                        minimumLineSpacingForSectionAt section: Int) -> CGFloat {
         0
     }
     
+    // Горизонтальные отступы между ячейками
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
-                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { // Горизонтальные отступы между ячейками
+                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         0
     }
     
+    // Отступы от краев коллекции
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
-                        insetForSectionAt section: Int) -> UIEdgeInsets { // Отступы от краев коллекции
+                        insetForSectionAt section: Int) -> UIEdgeInsets {
         UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 19)
     }
     
@@ -481,6 +514,7 @@ extension NewHabitViewController: CategoryViewControllerDelegate {
 
 // MARK: - TrackerParamsCollectionViewCellDelegate
 
+// TODO: Реализовать методы передачи параметров в трекер
 extension NewHabitViewController: TrackerParamsCollectionViewCellDelegate {
     func didSelectEmoji(_ emoji: String) {
         

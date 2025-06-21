@@ -28,7 +28,7 @@ final class TrackerParamsCollectionViewCell: UICollectionViewCell {
         colorView.layer.cornerRadius = 8
         colorView.layer.backgroundColor = .none
         colorView.layer.borderWidth = 3
-        colorView.layer.borderColor = UIColor(named: "tGrayAlpha30")?.cgColor
+        colorView.layer.borderColor = UIColor.clear.cgColor
         colorView.translatesAutoresizingMaskIntoConstraints = false
         return colorView
     }()
@@ -144,7 +144,8 @@ final class TrackerParamsCollectionViewCell: UICollectionViewCell {
             emojiView.backgroundColor = .tLightGray
             delegate?.didSelectEmoji(emojiLabel.text ?? "🌚")
         case .color:
-            colorBackgroundView.layer.borderColor = colorView.backgroundColor?.withAlphaComponent(30).cgColor
+            let borderColor = colorView.backgroundColor?.withAlphaComponent(0.3) ?? .tGrayAlpha30
+            colorBackgroundView.layer.borderColor = borderColor.cgColor
             delegate?.didSelectColor(colorView.backgroundColor ?? .tGreen)
         case nil:
             break
