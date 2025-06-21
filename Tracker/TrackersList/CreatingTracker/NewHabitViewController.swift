@@ -31,7 +31,7 @@ final class NewHabitViewController: UIViewController {
         let stackView = UIStackView(arrangedSubviews: [habitNameTextField, textStatusLabel])
         stackView.axis = .vertical
         stackView.distribution = .fill
-        stackView.spacing = 8
+        stackView.spacing = 0
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
@@ -79,6 +79,25 @@ final class NewHabitViewController: UIViewController {
         return stackView
     }()
     
+    private lazy var trackerParamsCollection: UICollectionView = {
+        let collection = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+        collection.isScrollEnabled = false
+        collection.translatesAutoresizingMaskIntoConstraints = false
+        return collection
+    }()
+    
+    private lazy var containerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    private lazy var scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
+    }()
+    
     // MARK: - Properties
     
     private let habitParamsCellIdentifier = "habitParamsCell"
@@ -86,6 +105,10 @@ final class NewHabitViewController: UIViewController {
         "Категория",
         "Расписание"
     ]
+    
+    private let trackerParamsCellIdentifier = "trackerParamsCell"
+    private let sectionHeaderIdentifier = "sectionHeader"
+    
     private var selectedDays: [DaysOfWeek] = []
     private var selectedCategory: String?
     private var scheduleLabel: String?
@@ -100,21 +123,55 @@ final class NewHabitViewController: UIViewController {
         setUpScreen()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        // Форсируем расчёт layout
+        trackerParamsCollection.layoutIfNeeded()
+        
+        // Устанавливаем высоту = contentSize
+        let height = trackerParamsCollection.contentSize.height
+        trackerParamsCollection.heightAnchor.constraint(equalToConstant: height).isActive = true
+        
+        // Обновляем скроллвью
+        containerView.layoutIfNeeded()
+        scrollView.contentSize = containerView.bounds.size
+    }
+    
     // MARK: - Methods
     
     private func setUpScreen() {
         setUpNavigationBar()
         view.backgroundColor = .tWhite
         
+        view.addSubview(scrollView)
+        scrollView.addSubview(containerView)
+        
         [textFieldStackView,
          habitParamsTableView,
-         buttonsStackView].forEach { view.addSubview($0) }
+         trackerParamsCollection,
+         buttonsStackView].forEach { containerView.addSubview($0) }
         
         habitNameTextField.delegate = self
         
         habitParamsTableView.dataSource = self
         habitParamsTableView.delegate = self
-        habitParamsTableView.register(UITableViewCell.self, forCellReuseIdentifier: habitParamsCellIdentifier)
+        habitParamsTableView.register(
+            UITableViewCell.self,
+            forCellReuseIdentifier: habitParamsCellIdentifier
+        )
+        
+        trackerParamsCollection.dataSource = self
+        trackerParamsCollection.delegate = self
+        trackerParamsCollection.register(
+            TrackerParamsCollectionViewCell.self,
+            forCellWithReuseIdentifier: trackerParamsCellIdentifier
+        )
+        trackerParamsCollection.register(
+            TrackersSupplementaryView.self,
+            forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+            withReuseIdentifier: sectionHeaderIdentifier
+        )
         
         setUpConstraints()
     }
@@ -130,22 +187,37 @@ final class NewHabitViewController: UIViewController {
     
     private func setUpConstraints() {
         NSLayoutConstraint.activate([
-            textFieldStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 24),
-            textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            containerView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            containerView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            containerView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            containerView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            
+            textFieldStackView.topAnchor.constraint(equalTo: containerView.safeAreaLayoutGuide.topAnchor, constant: 24),
+            textFieldStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            textFieldStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
             
             habitNameTextField.heightAnchor.constraint(equalToConstant: 75),
-            textStatusLabel.heightAnchor.constraint(equalToConstant: 20),
-            habitParamsTableView.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 24),
             
-            habitParamsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            habitParamsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            habitParamsTableView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -16),
+            habitParamsTableView.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 24),
+            habitParamsTableView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            habitParamsTableView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+            habitParamsTableView.heightAnchor.constraint(equalToConstant: 150), // TODO: ОПТИМИЗИРОВАТЬ ДЛЯ ДИНАМИЧЕСКОГО РАСЧЕТА
+            
+            trackerParamsCollection.topAnchor.constraint(equalTo: habitParamsTableView.bottomAnchor, constant: 32),
+            trackerParamsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            trackerParamsCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             buttonsStackView.heightAnchor.constraint(equalToConstant: 60),
-            buttonsStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            buttonsStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            buttonsStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+            buttonsStackView.topAnchor.constraint(equalTo: trackerParamsCollection.bottomAnchor, constant: 16),
+            buttonsStackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
+            buttonsStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 20),
+            buttonsStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -20)
         ])
     }
     
@@ -250,12 +322,14 @@ extension NewHabitViewController: UITextFieldDelegate {
         
         if updatedText.count > 38 {
             textStatusLabel.text = "Ограничение 38 символов"
-            textStatusLabel.isHidden = false
+//            textStatusLabel.isHidden = false
+            textFieldStackView.spacing = 8
             return false
         }
         
         textStatusLabel.text = nil
-        textStatusLabel.isHidden = true
+//        textStatusLabel.isHidden = true
+        textFieldStackView.spacing = 0
         return true
     }
     
@@ -267,6 +341,95 @@ extension NewHabitViewController: UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         trackerName = textField.text
+    }
+}
+
+// MARK: - UICollectionViewDataSource
+
+extension NewHabitViewController: UICollectionViewDataSource {
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        2
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        numberOfItemsInSection section: Int) -> Int {
+        18
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard
+            let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: trackerParamsCellIdentifier,
+                for: indexPath
+            ) as? TrackerParamsCollectionViewCell
+        else { return UICollectionViewCell() }
+        
+        let cellType: CollectionCellType = indexPath.section == 0 ? .emoji : .color
+        cell.configureCell(with: cellType, for: indexPath)
+        
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        viewForSupplementaryElementOfKind kind: String,
+                        at indexPath: IndexPath) -> UICollectionReusableView {
+        guard
+            let header = collectionView.dequeueReusableSupplementaryView(
+                ofKind: UICollectionView.elementKindSectionHeader,
+                withReuseIdentifier: sectionHeaderIdentifier,
+                for: indexPath
+            ) as? TrackersSupplementaryView
+        else { return UICollectionReusableView() }
+        
+        header.titleLabel.text = indexPath.section == 0 ? "Emoji" : "Цвет"
+        
+        return header
+    }
+}
+
+// MARK: - UICollectionViewDelegateFlowLayout
+
+extension NewHabitViewController: UICollectionViewDelegateFlowLayout {
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        sizeForItemAt indexPath: IndexPath) -> CGSize { // Размер ячейки
+//        let cellSide = 52
+//        let availableSpace = Int(collectionView.frame.width - 16 * 2)
+//        if availableSpace < (cellSide * 6) {
+//            cellSide = 40
+//        }
+//        return CGSize(width: cellSide, height: cellSide)
+        
+        let availableWidth = collectionView.bounds.width - 32 // 16+16 отступы
+            let cellWidth = (availableWidth - 5 * 5) / 6 // 5 промежутков между 6 ячейками
+            return CGSize(width: cellWidth, height: cellWidth)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumLineSpacingForSectionAt section: Int) -> CGFloat { // Вертикальные отступы между ячейками
+        0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        minimumInteritemSpacingForSectionAt section: Int) -> CGFloat { // Горизонтальные отступы между ячейками
+        0
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        insetForSectionAt section: Int) -> UIEdgeInsets { // Отступы от краев коллекции
+        UIEdgeInsets(top: 24, left: 18, bottom: 24, right: 19)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView,
+                        layout collectionViewLayout: UICollectionViewLayout,
+                        referenceSizeForHeaderInSection section: Int) -> CGSize {
+        CGSize(width: collectionView.frame.width, height: 18)
     }
 }
 
@@ -313,5 +476,25 @@ extension NewHabitViewController: CategoryViewControllerDelegate {
         let categoryVC = CategoryViewController(selectedCategoryName: selectedCategory)
         categoryVC.delegate = self
         navigationController?.pushViewController(categoryVC, animated: true)
+    }
+}
+
+// MARK: - TrackerParamsCollectionViewCellDelegate
+
+extension NewHabitViewController: TrackerParamsCollectionViewCellDelegate {
+    func didSelectEmoji(_ emoji: String) {
+        
+    }
+    
+    func didSelectColor(_ color: UIColor) {
+        
+    }
+    
+    func didDeselectEmoji() {
+        
+    }
+    
+    func didDeselectColor() {
+        
     }
 }
