@@ -1,10 +1,14 @@
 import UIKit
 
-final class NewHabitViewController: UIViewController {
+protocol TrackerCreatingDelegate: AnyObject {
+    func didCreateNewTracker(in category: TrackerCategory)
+}
+
+final class TrackerSetupViewController: UIViewController {
     
     // MARK: - UI
     
-    private lazy var habitNameTextField: UITextField = {
+    private lazy var trackerNameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "Название привычки"
         textField.font = .systemFont(ofSize: 17)
@@ -28,7 +32,7 @@ final class NewHabitViewController: UIViewController {
     }()
     
     private lazy var textFieldStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [habitNameTextField, textStatusLabel])
+        let stackView = UIStackView(arrangedSubviews: [trackerNameTextField, textStatusLabel])
         stackView.axis = .vertical
         stackView.distribution = .fill
         stackView.spacing = 0
@@ -36,7 +40,7 @@ final class NewHabitViewController: UIViewController {
         return stackView
     }()
     
-    private lazy var habitParamsTableView: UITableView = {
+    private lazy var trackerParamsTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         return tableView
@@ -63,6 +67,7 @@ final class NewHabitViewController: UIViewController {
         createButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         createButton.titleLabel?.textColor = .tWhite
         createButton.backgroundColor = .tGray
+        createButton.isEnabled = false
         createButton.layer.cornerRadius = 16
         createButton.addTarget(self,
                                action: #selector(createButtonPressed),
@@ -102,16 +107,16 @@ final class NewHabitViewController: UIViewController {
     // MARK: - Properties
     
     private let habitParamsCellIdentifier = "habitParamsCell"
-    private let cellNames = [
-        "Категория",
-        "Расписание"
-    ]
+    private var trackerAttributes = ["Категория"]
+    private var isScheduleNeeded = false
     
     private let trackerParamsCellIdentifier = "trackerParamsCell"
     private let sectionHeaderIdentifier = "sectionHeader"
     
     private var selectedDays: [DaysOfWeek] = []
     private var selectedCategory: String?
+    private var selectedEmoji: String?
+    private var selectedColor: UIColor?
     private var scheduleLabel: String?
     private var trackerName: String?
     
@@ -119,6 +124,20 @@ final class NewHabitViewController: UIViewController {
     private var selectedColorIndex: IndexPath?
     
     weak var delegate: TrackerCreatingDelegate?
+    
+    // MARK: - Init
+    
+    init(isScheduleNeeded: Bool) {
+        super.init(nibName: nil, bundle: nil)
+        if isScheduleNeeded {
+            trackerAttributes.append("Расписание")
+            self.isScheduleNeeded = true
+        }
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     // MARK: - Lifecycle
     
@@ -130,14 +149,11 @@ final class NewHabitViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        // Форсируем расчёт layout
         trackerParamsCollection.layoutIfNeeded()
         
-        // Устанавливаем высоту = contentSize
         let height = trackerParamsCollection.contentSize.height
         trackerParamsCollection.heightAnchor.constraint(equalToConstant: height).isActive = true
         
-        // Обновляем скроллвью
         containerView.layoutIfNeeded()
         scrollView.contentSize = containerView.bounds.size
     }
@@ -152,15 +168,15 @@ final class NewHabitViewController: UIViewController {
         scrollView.addSubview(containerView)
         
         [textFieldStackView,
-         habitParamsTableView,
+         trackerParamsTableView,
          trackerParamsCollection,
          buttonsStackView].forEach { containerView.addSubview($0) }
         
-        habitNameTextField.delegate = self
+        trackerNameTextField.delegate = self
         
-        habitParamsTableView.dataSource = self
-        habitParamsTableView.delegate = self
-        habitParamsTableView.register(
+        trackerParamsTableView.dataSource = self
+        trackerParamsTableView.delegate = self
+        trackerParamsTableView.register(
             UITableViewCell.self,
             forCellReuseIdentifier: habitParamsCellIdentifier
         )
@@ -182,7 +198,7 @@ final class NewHabitViewController: UIViewController {
     
     private func setUpNavigationBar() {
         navigationItem.hidesBackButton = true
-        navigationItem.title = "Новая привычка"
+        navigationItem.title = isScheduleNeeded ? "Новая привычка" : "Новое нерегулярное событие"
         navigationController?.navigationBar.tintColor = .tBlack
         navigationController?.navigationBar.titleTextAttributes = [
             .font: UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -190,6 +206,8 @@ final class NewHabitViewController: UIViewController {
     }
     
     private func setUpConstraints() {
+        let tableViewHeight = CGFloat(75 * trackerAttributes.count)
+        
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -206,14 +224,14 @@ final class NewHabitViewController: UIViewController {
             textFieldStackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
             textFieldStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
             
-            habitNameTextField.heightAnchor.constraint(equalToConstant: 75),
+            trackerNameTextField.heightAnchor.constraint(equalToConstant: 75),
             
-            habitParamsTableView.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 24),
-            habitParamsTableView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            habitParamsTableView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-            habitParamsTableView.heightAnchor.constraint(equalToConstant: 150), // TODO: ОПТИМИЗИРОВАТЬ ДЛЯ ДИНАМИЧЕСКОГО РАСЧЕТА
+            trackerParamsTableView.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 24),
+            trackerParamsTableView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            trackerParamsTableView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+            trackerParamsTableView.heightAnchor.constraint(equalToConstant: tableViewHeight),
             
-            trackerParamsCollection.topAnchor.constraint(equalTo: habitParamsTableView.bottomAnchor, constant: 32),
+            trackerParamsCollection.topAnchor.constraint(equalTo: trackerParamsTableView.bottomAnchor, constant: 32),
             trackerParamsCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             trackerParamsCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
@@ -225,27 +243,52 @@ final class NewHabitViewController: UIViewController {
         ])
     }
     
+    private func updateCreateButtonState() {
+        let isReady = getTrackerParams() != nil
+        createButton.isEnabled = isReady
+        createButton.backgroundColor = isReady ? .tBlack : .tGray
+    }
+    
+    private func getTrackerParams() -> (
+        name: String,
+        category: String,
+        emoji: String,
+        color: UIColor,
+        schedule: [DaysOfWeek]?
+    )? {
+        guard let trackerName, trackerName.count > 0,
+              let selectedCategory,
+              let selectedEmoji,
+              let selectedColor
+        else { return nil }
+        
+        if isScheduleNeeded {
+            guard selectedDays.count > 0 else { return nil }
+        }
+        
+        return (trackerName,
+                selectedCategory,
+                selectedEmoji,
+                selectedColor,
+                isScheduleNeeded ? selectedDays : nil)
+    }
+    
     @objc private func cancelButtonPressed() {
         navigationController?.popViewController(animated: true)
     }
     
     @objc private func createButtonPressed() {
-        guard let trackerName,
-              trackerName.count > 0,
-              let selectedCategory,
-              selectedDays.count > 0
-        else { return }
+        guard let trackerParams = getTrackerParams() else { return }
         
         let tracker = Tracker(
             id: UUID(),
-            name: trackerName,
-            color: .tGreen,
-            emoji: "🍏",
-            schedule: selectedDays
+            name: trackerParams.name,
+            color: trackerParams.color,
+            emoji: trackerParams.emoji,
+            schedule: isScheduleNeeded ? trackerParams.schedule : nil
         )
         
-        let categoryName = selectedCategory
-        let category = TrackerCategory(name: categoryName, trackers: [tracker])
+        let category = TrackerCategory(name: trackerParams.category, trackers: [tracker])
         
         delegate?.didCreateNewTracker(in: category)
         dismiss(animated: true)
@@ -254,9 +297,11 @@ final class NewHabitViewController: UIViewController {
 
 // MARK: - UITableViewDataSource
 
-extension NewHabitViewController: UITableViewDataSource {
+extension TrackerSetupViewController: UITableViewDataSource {
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int { 2 }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        trackerAttributes.count
+    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: habitParamsCellIdentifier)
@@ -265,15 +310,18 @@ extension NewHabitViewController: UITableViewDataSource {
         
         cell.layer.masksToBounds = true
         cell.layer.cornerRadius = 16
-        switch indexPath.row {
-        case 0: cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        default: cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        
+        if trackerAttributes.count > 1 {
+            switch indexPath.row {
+            case 0: cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+            default: cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+            }
         }
         
         cell.accessoryType = .disclosureIndicator
         
         cell.textLabel?.font = .systemFont(ofSize: 17)
-        cell.textLabel?.text = cellNames[indexPath.row]
+        cell.textLabel?.text = trackerAttributes[indexPath.row]
         
         cell.detailTextLabel?.textColor = .tGray
         cell.detailTextLabel?.font = .systemFont(ofSize: 17)
@@ -292,16 +340,20 @@ extension NewHabitViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        switch indexPath.row {
-        case 0: cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
-        default: cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+        if isScheduleNeeded {
+            switch indexPath.row {
+            case 0: cell.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
+            default: cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
+            }
+        } else {
+            cell.separatorInset = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: .greatestFiniteMagnitude)
         }
     }
 }
 
 // MARK: - UITableViewDelegate
 
-extension NewHabitViewController: UITableViewDelegate {
+extension TrackerSetupViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 75 }
     
@@ -318,7 +370,7 @@ extension NewHabitViewController: UITableViewDelegate {
 
 // MARK: - UITextFieldDelegate
 
-extension NewHabitViewController: UITextFieldDelegate {
+extension TrackerSetupViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let currentText = textField.text ?? ""
         guard let stringRange = Range(range, in: currentText) else { return false }
@@ -343,16 +395,15 @@ extension NewHabitViewController: UITextFieldDelegate {
     
     func textFieldDidEndEditing(_ textField: UITextField) {
         trackerName = textField.text
+        updateCreateButtonState()
     }
 }
 
 // MARK: - UICollectionViewDataSource
 
-extension NewHabitViewController: UICollectionViewDataSource {
+extension TrackerSetupViewController: UICollectionViewDataSource {
     
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        2
-    }
+    func numberOfSections(in collectionView: UICollectionView) -> Int { 2 }
     
     func collectionView(_ collectionView: UICollectionView,
                         numberOfItemsInSection section: Int) -> Int {
@@ -368,6 +419,7 @@ extension NewHabitViewController: UICollectionViewDataSource {
             ) as? TrackerParamsCollectionViewCell
         else { return UICollectionViewCell() }
         
+        cell.delegate = self
         let cellType: CollectionCellType = indexPath.section == 0 ? .emoji : .color
         cell.configureCell(with: cellType, for: indexPath)
         
@@ -428,7 +480,7 @@ extension NewHabitViewController: UICollectionViewDataSource {
 
 // MARK: - UICollectionViewDelegateFlowLayout
 
-extension NewHabitViewController: UICollectionViewDelegateFlowLayout {
+extension TrackerSetupViewController: UICollectionViewDelegateFlowLayout {
     // Размер ячейки
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
@@ -468,9 +520,10 @@ extension NewHabitViewController: UICollectionViewDelegateFlowLayout {
 
 // MARK: - ScheduleViewControllerDelegate
 
-extension NewHabitViewController: ScheduleViewControllerDelegate {
+extension TrackerSetupViewController: ScheduleViewControllerDelegate {
     func didSelectDays(days: [DaysOfWeek]) {
         selectedDays = days
+        updateCreateButtonState()
         updateScheduleDisplay()
     }
     
@@ -486,7 +539,7 @@ extension NewHabitViewController: ScheduleViewControllerDelegate {
                 .joined(separator: ", ")
         }
         
-        habitParamsTableView.reloadRows(at: [IndexPath(row: 1, section: 0)], with: .automatic)
+        trackerParamsTableView.reloadRows(at: [IndexPath(row: 1, section: 0)], with: .automatic)
     }
     
     private func showScheduleViewController() {
@@ -499,10 +552,11 @@ extension NewHabitViewController: ScheduleViewControllerDelegate {
 
 // MARK: - CategoryViewControllerDelegate
 
-extension NewHabitViewController: CategoryViewControllerDelegate {
+extension TrackerSetupViewController: CategoryViewControllerDelegate {
     func didSelectCategory(name: String) {
         selectedCategory = name
-        habitParamsTableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
+        updateCreateButtonState()
+        trackerParamsTableView.reloadRows(at: [IndexPath(row: 0, section: 0)], with: .automatic)
     }
     
     private func showCategoryViewController() {
@@ -514,21 +568,24 @@ extension NewHabitViewController: CategoryViewControllerDelegate {
 
 // MARK: - TrackerParamsCollectionViewCellDelegate
 
-// TODO: Реализовать методы передачи параметров в трекер
-extension NewHabitViewController: TrackerParamsCollectionViewCellDelegate {
+extension TrackerSetupViewController: TrackerParamsCollectionViewCellDelegate {
     func didSelectEmoji(_ emoji: String) {
-        
+        selectedEmoji = emoji
+        updateCreateButtonState()
     }
     
     func didSelectColor(_ color: UIColor) {
-        
+        selectedColor = color
+        updateCreateButtonState()
     }
     
     func didDeselectEmoji() {
-        
+        selectedEmoji = nil
+        updateCreateButtonState()
     }
     
     func didDeselectColor() {
-        
+        selectedColor = nil
+        updateCreateButtonState()
     }
 }
