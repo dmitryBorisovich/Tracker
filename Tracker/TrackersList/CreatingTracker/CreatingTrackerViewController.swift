@@ -95,15 +95,4 @@ final class CreatingTrackerViewController: UIViewController {
         trackerVC.delegate = delegate
         navigationController?.pushViewController(trackerVC, animated: true)
     }
-//    @objc private func habitButtonPressed() {
-//        let newHabitViewController = NewHabitViewController()
-//        newHabitViewController.delegate = delegate
-//        navigationController?.pushViewController(newHabitViewController, animated: true)
-//    }
-//    
-//    @objc private func irregularEventButtonPressed() {
-//        let newEventViewController = NewEventViewController()
-//        newEventViewController.delegate = delegate
-//        navigationController?.pushViewController(newEventViewController, animated: true)
-//    }
 }

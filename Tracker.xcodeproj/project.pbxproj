@@ -28,6 +28,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		FE1D39DF2D4FD8CE006C720F /* TrackersList */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = TrackersList; sourceTree = "<group>"; };
+		FE5E679B2E0DD07500DF7B36 /* CoreData */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = CoreData; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +61,7 @@
 		FEEA43482D4668D800BDFBF3 /* Tracker */ = {
 			isa = PBXGroup;
 			children = (
+				FE5E679B2E0DD07500DF7B36 /* CoreData */,
 				FE1D39DF2D4FD8CE006C720F /* TrackersList */,
 				FE1D39B02D498054006C720F /* TabBarController.swift */,
 				FE1D39B22D4980D1006C720F /* StatisticsViewController.swift */,
@@ -89,6 +91,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				FE1D39DF2D4FD8CE006C720F /* TrackersList */,
+				FE5E679B2E0DD07500DF7B36 /* CoreData */,
 			);
 			name = Tracker;
 			productName = Tracker;
