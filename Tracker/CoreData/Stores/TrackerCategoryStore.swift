@@ -14,8 +14,12 @@ final class TrackerCategoryStore {
     }
     
     func addNewCategory(_ category: TrackerCategory) throws {
-        // TODO: реализовать добавление новой категории
+        let trackerCategoryCoreData = TrackerCategoryCoreData(context: context)
+        updateExistingCategory(trackerCategoryCoreData: trackerCategoryCoreData, with: category)
         try context.save()
     }
     
+    func updateExistingCategory(trackerCategoryCoreData: TrackerCategoryCoreData, with category: TrackerCategory) {
+        trackerCategoryCoreData.name = category.name
+    }
 }
