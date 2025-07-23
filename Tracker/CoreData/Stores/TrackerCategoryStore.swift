@@ -13,13 +13,6 @@ final class TrackerCategoryStore {
         self.context = context
     }
     
-    private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
-        let context = self.context
-        var result: Result<R, Error>!
-        context.performAndWait { result = action(context) }
-        return try result.get()
-    }
-    
     private func updateExistingCategory(
         trackerCategoryCoreData: TrackerCategoryCoreData,
         with category: TrackerCategory
@@ -27,13 +20,16 @@ final class TrackerCategoryStore {
         trackerCategoryCoreData.name = category.name
     }
     
-    func addNewCategory(_ category: TrackerCategory) throws {
-        try performSync { context in
-            Result {
-                let trackerCategoryCoreData = TrackerCategoryCoreData(context: context)
-                updateExistingCategory(trackerCategoryCoreData: trackerCategoryCoreData, with: category)
-                try context.save()
-            }
-        }
+    private func addNewCategory(_ category: TrackerCategory) throws {
+        let trackerCategoryCoreData = TrackerCategoryCoreData(context: context)
+        updateExistingCategory(trackerCategoryCoreData: trackerCategoryCoreData, with: category)
+        try context.save()
     }
 }
+
+//private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
+//    let context = self.context
+//    var result: Result<R, Error>!
+//    context.performAndWait { result = action(context) }
+//    return try result.get()
+//}

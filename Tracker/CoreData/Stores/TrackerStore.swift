@@ -8,8 +8,17 @@ protocol TrackerStoreDelegate: AnyObject {
 struct TrackerStoreUpdate {
     let insertedIndexes: IndexSet
     let deletedIndexes: IndexSet
+    let updatedIndexes: IndexSet
+    let movedIndexes: [TrackerStoreMove]
     let insertedSections: IndexSet
     let deletedSections: IndexSet
+}
+
+struct TrackerStoreMove {
+    let oldIndex: Int
+    let newIndex: Int
+    let oldSection: Int
+    let newSection: Int
 }
 
 final class TrackerStore: NSObject {
@@ -24,6 +33,8 @@ final class TrackerStore: NSObject {
     
     private var insertedIndexes: IndexSet?
     private var deletedIndexes: IndexSet?
+    private var updatedIndexes: IndexSet?
+    private var movedIndexes: [TrackerStoreMove]?
     private var insertedSections: IndexSet?
     private var deletedSections: IndexSet?
     
@@ -55,13 +66,6 @@ final class TrackerStore: NSObject {
     init(context: NSManagedObjectContext) {
         self.context = context
     }
-    
-//    private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
-//        let context = self.context
-//        var result: Result<R, Error>!
-//        context.performAndWait { result = action(context) }
-//        return try result.get()
-//    }
     
     private func updateExistingTracker(_ trackerCoreData: TrackerCoreData, with tracker: Tracker) {
         trackerCoreData.id = tracker.id
@@ -115,7 +119,7 @@ final class TrackerStore: NSObject {
     }
 }
 
-extension TrackerStore: TrackerStoreProtocol {
+extension TrackerStore {
     var numberOfSections: Int {
         fetchedResultsController.sections?.count ?? 0
     }
@@ -146,15 +150,15 @@ extension TrackerStore: TrackerStoreProtocol {
         let calendar = Calendar.current
         let pickerWeekday = calendar.component(.weekday, from: date)
         let filteredWeekday = pickerWeekday == 1 ? 7 : pickerWeekday - 1
-        let pattern = String(format: "(^|)%d(|$)", filteredWeekday)
+        let pattern = String(filteredWeekday)
         
-        // Удаляем кэш перед обновлением (важно при работе с секциями)
+        // Удаляем кэш перед обновлением
         NSFetchedResultsController<TrackerCoreData>.deleteCache(withName: fetchedResultsController.cacheName)
         
         // Базовый предикат для расписания
-        var predicate = NSPredicate(format: "schedule MATCHES %@ OR schedule == nil", pattern)
+        var predicate = NSPredicate(format: "schedule CONTAINS %@ OR schedule == nil", pattern)
         
-        // Добавляем условие для поиска по тексту, если нужно
+        // Добавляем условие для поиска по тексту
         if let searchText = filterText?.lowercased(), !searchText.isEmpty {
             predicate = NSPredicate(
                 format: "(schedule CONTAINS %d OR schedule == nil) AND name CONTAINS[cd] %@",
@@ -168,10 +172,11 @@ extension TrackerStore: TrackerStoreProtocol {
         do {
             try fetchedResultsController.performFetch()
             
-            // Формируем обновления для UI
             let update = TrackerStoreUpdate(
                 insertedIndexes: IndexSet(),
                 deletedIndexes: IndexSet(),
+                updatedIndexes: IndexSet(),
+                movedIndexes: [],
                 insertedSections: IndexSet(),
                 deletedSections: IndexSet()
             )
@@ -189,25 +194,34 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         insertedIndexes = IndexSet()
         deletedIndexes = IndexSet()
+        updatedIndexes = IndexSet()
+        movedIndexes = []
         insertedSections = IndexSet()
         deletedSections = IndexSet()
     }
 
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        guard
-            let insertedIndexes, let deletedIndexes,
-            let insertedSections, let deletedSections
+        guard let insertedIndexes = insertedIndexes,
+              let deletedIndexes = deletedIndexes,
+              let updatedIndexes = updatedIndexes,
+              let movedIndexes = movedIndexes,
+              let insertedSections = insertedSections,
+              let deletedSections = deletedSections
         else { return }
         
-        delegate?.didUpdate(
-            TrackerStoreUpdate(insertedIndexes: insertedIndexes,
-                               deletedIndexes: deletedIndexes,
-                               insertedSections: insertedSections,
-                               deletedSections: deletedSections)
-        )
+        delegate?.didUpdate(TrackerStoreUpdate(
+            insertedIndexes: insertedIndexes,
+            deletedIndexes: deletedIndexes,
+            updatedIndexes: updatedIndexes,
+            movedIndexes: movedIndexes,
+            insertedSections: insertedSections,
+            deletedSections: deletedSections
+        ))
         
         self.insertedIndexes = nil
         self.deletedIndexes = nil
+        self.updatedIndexes = nil
+        self.movedIndexes = nil
         self.insertedSections = nil
         self.deletedSections = nil
     }
@@ -220,15 +234,28 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         newIndexPath: IndexPath?
     ) {
         switch type {
+        case .insert:
+            if let newIndexPath = newIndexPath {
+                insertedIndexes?.insert(newIndexPath.item)
+            }
         case .delete:
             if let indexPath = indexPath {
                 deletedIndexes?.insert(indexPath.item)
             }
-        case .insert:
-            if let indexPath = newIndexPath {
-                insertedIndexes?.insert(indexPath.item)
+        case .update:
+            if let indexPath = indexPath {
+                updatedIndexes?.insert(indexPath.item)
             }
-        default:
+        case .move:
+            if let oldIndexPath = indexPath, let newIndexPath = newIndexPath {
+                movedIndexes?.append(TrackerStoreMove(
+                    oldIndex: oldIndexPath.item,
+                    newIndex: newIndexPath.item,
+                    oldSection: oldIndexPath.section,
+                    newSection: newIndexPath.section
+                ))
+            }
+        @unknown default:
             break
         }
     }
@@ -249,3 +276,10 @@ extension TrackerStore: NSFetchedResultsControllerDelegate {
         }
     }
 }
+
+//    private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
+//        let context = self.context
+//        var result: Result<R, Error>!
+//        context.performAndWait { result = action(context) }
+//        return try result.get()
+//    }

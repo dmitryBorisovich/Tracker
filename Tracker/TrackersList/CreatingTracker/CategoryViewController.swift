@@ -1,5 +1,14 @@
 import UIKit
 
+struct MockTrackers {
+    static let shared = MockTrackers()
+    let categories = [
+        TrackerCategory(
+            name: "Категория",
+            trackers: [])
+    ]
+}
+
 protocol CategoryViewControllerDelegate: AnyObject {
     func didSelectCategory(name: String)
 }
@@ -122,7 +131,7 @@ final class CategoryViewController: UIViewController {
     }
     
     @objc private func addCategoryButtonPressed() {
-        // TODO: Реализовать логику добавления новой категории (спринт 15)
+        // TODO: Реализовать логику добавления новой категории (спринт 16)
     }
 }
 
