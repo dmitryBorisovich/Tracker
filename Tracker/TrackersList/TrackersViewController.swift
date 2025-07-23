@@ -1,5 +1,15 @@
 import UIKit
 
+protocol TrackerStoreProtocol {
+    var numberOfSections: Int { get }
+    func numberOfItemsInSection(_ section: Int) -> Int
+    func tracker(at indexPath: IndexPath) -> Tracker?
+    func sectionName(_ section: Int) -> String?
+    func addTracker(_ tracker: Tracker, to category: TrackerCategory) throws
+    func deleteTracker(at indexPath: IndexPath) throws
+    func updatePredicate(filterText: String?, date: Date)
+}
+
 final class TrackersViewController: UIViewController {
     
     // MARK: - UI
@@ -76,27 +86,26 @@ final class TrackersViewController: UIViewController {
         Calendar.current.startOfDay(for: datePicker.date)
     }
     
-    private lazy var dataProvider: DataProviderProtocol? = {
-        let trackers = TrackerStore()
-        do {
-            try dataProvider = DataProvider(trackerStore: trackers, delegate: self)
-            return dataProvider
-        } catch {
-            print("Данные недоступны.")
-            return nil
-        }
-    }()
+//    private lazy var dataProvider: DataProviderProtocol? = {
+//        let trackers = TrackerStore()
+//        do {
+//            try dataProvider = DataProvider(trackerStore: trackers, delegate: self)
+//            return dataProvider
+//        } catch {
+//            print("Данные недоступны.")
+//            return nil
+//        }
+//    }()
     
-    private var trackerRecords = TrackerRecordStore()
-    
-//    var categories: [TrackerCategory] = []
-//    var visibleCategories: [TrackerCategory] = []
-//    var completedTrackers: Set<TrackerRecord> = []
+    private var trackerStore: TrackerStoreProtocol?
+    private var trackerRecordsStore = TrackerRecordStore()
+    private var trackerCategoriesStore = TrackerCategoryStore()
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        trackerStore = TrackerStore()
         setUpNavigationBar()
         setUpScreen()
     }
@@ -149,11 +158,6 @@ final class TrackersViewController: UIViewController {
         ])
     }
     
-//    private func reloadData() {
-//        categories = mockTrackers.categories
-//        dateChanged()
-//    }
-    
     @objc private func addTrackerButtonPressed() {
         let creatingTrackerVC = CreatingTrackerViewController()
         creatingTrackerVC.delegate = self
@@ -168,45 +172,9 @@ final class TrackersViewController: UIViewController {
     
     private func reloadVisibleCategories() {
         let searchText = searchField.text?.lowercased() ?? ""
-        dataProvider?.updatePredicate(filterText: searchText, date: currentDate)
+        trackerStore?.updatePredicate(filterText: searchText, date: currentDate)
         reloadPlaceholder()
     }
-    
-//    private func reloadVisibleCategories() {
-//        let filteredText = (searchField.text ?? "").lowercased()
-//        
-//        visibleCategories = categories.compactMap { category in
-//            let trackers = category.trackers.filter { tracker in
-//                let textCondition = filteredText.isEmpty || tracker.name.lowercased().contains(filteredText)
-//                
-//                if tracker.schedule == nil {
-//                    let isCompletedToday = isTrackerCompletedToday(id: tracker.id)
-//                    return textCondition && !isCompletedToday
-//                }
-//                
-//                let calendar = Calendar.current
-//                let pickerWeekday = calendar.component(.weekday, from: datePicker.date)
-//                let filteredWeekday = pickerWeekday == 1 ? 7 : pickerWeekday - 1
-//                let dateCondition = tracker.schedule?.contains { weekDay in
-//                    weekDay.rawValue == filteredWeekday
-//                } ?? false
-//                
-//                return textCondition && dateCondition
-//            }
-//            
-//            if trackers.isEmpty {
-//                return nil
-//            }
-//            
-//            return TrackerCategory(
-//                name: category.name,
-//                trackers: trackers
-//            )
-//        }
-//        
-//        trackersCollection.reloadData()
-//        reloadPlaceholder()
-//    }
     
     private func reloadPlaceholder() {
         let isCollectionEmpty = trackersCollection.numberOfSections == 0
@@ -215,7 +183,7 @@ final class TrackersViewController: UIViewController {
     
     private func deleteTracker(index: IndexPath) {
         do {
-            try dataProvider?.deleteTracker(at: index)
+            try trackerStore?.deleteTracker(at: index)
         } catch {
             print("ошибка")
         }
@@ -227,13 +195,11 @@ final class TrackersViewController: UIViewController {
 extension TrackersViewController: UICollectionViewDataSource {
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-//        visibleCategories.count
-        dataProvider?.numberOfSections ?? 0
+        trackerStore?.numberOfSections ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-//        visibleCategories[section].trackers.count
-        dataProvider?.numberOfItemsInSection(section) ?? 0
+        trackerStore?.numberOfItemsInSection(section) ?? 0
     }
     
     func collectionView(
@@ -247,8 +213,7 @@ extension TrackersViewController: UICollectionViewDataSource {
             ) as? TrackersCollectionViewCell
         else { return UICollectionViewCell() }
         
-//        let tracker = visibleCategories[indexPath.section].trackers[indexPath.row]
-        guard let tracker = dataProvider?.tracker(at: indexPath) else { return UICollectionViewCell() }
+        guard let tracker = trackerStore?.tracker(at: indexPath) else { return UICollectionViewCell() }
         
         cell.delegate = self
         cell.configureCell(with: tracker)
@@ -267,9 +232,8 @@ extension TrackersViewController: UICollectionViewDataSource {
             ) as? TrackersSupplementaryView
         else { return UICollectionReusableView() }
         
-        let sectionName = dataProvider?.sectionName(indexPath.section)
+        let sectionName = trackerStore?.sectionName(indexPath.section)
         header.titleLabel.text = sectionName
-//        header.titleLabel.text = visibleCategories[indexPath.section].name
         
         return header
     }
@@ -349,37 +313,25 @@ extension TrackersViewController: TrackersCollectionViewCellDelegate {
     func toggleTrackerRecord(for id: UUID) {
         let record = TrackerRecord(id: id, date: currentDate)
         do {
-            try trackerRecords.toggleTrackerRecord(record: record)
+            try trackerRecordsStore.toggleTrackerRecord(record: record)
         } catch {
             print("ошибка \(error.localizedDescription)")
         }
-//        let record = TrackerRecord(id: id, date: currentDate)
-//        
-//        if completedTrackers.contains(record) {
-//            completedTrackers.remove(record)
-//        } else {
-//            completedTrackers.insert(record)
-//        }
     }
     
     func countTrackerRecords(for id: UUID) -> Int {
         do {
-            return try trackerRecords.countTrackerRecords(for: id)
+            return try trackerRecordsStore.countTrackerRecords(for: id)
         } catch {
             print("ошибка")
             return 0
         }
-//        completedTrackers.filter { $0.id == id }.count
     }
     
     func isTrackerCompletedToday(id: UUID) -> Bool {
-//        let today = currentDate
-//        return completedTrackers.contains { record in
-//            record.id == id && Calendar.current.isDate(record.date, inSameDayAs: today)
-//        }
         let record = TrackerRecord(id: id, date: currentDate)
         do {
-            return try trackerRecords.isTrackerCompletedToday(record: record)
+            return try trackerRecordsStore.isTrackerCompletedToday(record: record)
         } catch {
             print("ошибка")
             return false
@@ -393,33 +345,16 @@ extension TrackersViewController: TrackerCreatingDelegate {
     func didCreateNewTracker(in category: TrackerCategory) {
         guard let tracker = category.trackers.first else { return }
         do {
-            try dataProvider?.addTracker(tracker, to: category)
+            try trackerStore?.addTracker(tracker, to: category)
         } catch {
             print("ошибка")
         }
-//        if let index = categories.firstIndex(where: { $0.name == category.name }) {
-//            var updatedTrackers = categories[index].trackers
-//            updatedTrackers.append(category.trackers[0])
-//            categories[index] = TrackerCategory(
-//                name: category.name,
-//                trackers: updatedTrackers
-//            )
-//        } else {
-//            categories.append(
-//                TrackerCategory(
-//                    name: category.name,
-//                    trackers: category.trackers
-//                )
-//            )
-//        }
-//        
-//        reloadVisibleCategories()
     }
 }
 
 // MARK: - DataProviderDelegate
 
-extension TrackersViewController: DataProviderDelegate {
+extension TrackersViewController: TrackerStoreDelegate {
     func didUpdate(_ update: TrackerStoreUpdate) {
 //        trackersCollection.performBatchUpdates {
 //            trackersCollection.insertSections(update.insertedSections)
