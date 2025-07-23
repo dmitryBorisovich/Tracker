@@ -3,8 +3,11 @@ import CoreData
 
 final class TrackerStore {
     
-    private let context: NSManagedObjectContext
+    enum TrackerError: Error {
+        case trackerNotFound
+    }
     
+    private let context: NSManagedObjectContext
     private let colorMarshalling = UIColorMarshalling()
     private let scheduleMarshalling = ScheduleMarshalling()
     
@@ -15,6 +18,13 @@ final class TrackerStore {
     
     init(context: NSManagedObjectContext) {
         self.context = context
+    }
+    
+    private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
+        let context = self.context
+        var result: Result<R, Error>!
+        context.performAndWait { result = action(context) }
+        return try result.get()
     }
     
     func updateExistingTracker(_ trackerCoreData: TrackerCoreData, with tracker: Tracker) {
@@ -30,39 +40,49 @@ final class TrackerStore {
         }
     }
     
-    func addNewTracker(_ tracker: Tracker, to category: TrackerCategory) throws {
-        // Создаём объект TrackerCoreData
-        let trackerCoreData = TrackerCoreData(context: context)
-        updateExistingTracker(trackerCoreData, with: tracker)
-        
-        // Находим или создаём категорию
-        let categoryFetchRequest = TrackerCategoryCoreData.fetchRequest()
-        categoryFetchRequest.predicate = NSPredicate(format: "name == %@", category.name)
-        
-        if let existingCategory = try context.fetch(categoryFetchRequest).first {
-            // Если категория есть - связываем трекер с ней
-            trackerCoreData.category = existingCategory
-        } else {
-            // Если категории нет - создаём новую
-            let newCategory = TrackerCategoryCoreData(context: context)
-            newCategory.name = category.name
-            trackerCoreData.category = newCategory
+    func convertToTracker(_ trackerCoreData: TrackerCoreData) -> Tracker {
+        var schedule: [DaysOfWeek]?
+        if let coreDataSchedule = trackerCoreData.schedule {
+            schedule = scheduleMarshalling.schedule(from: coreDataSchedule)
         }
         
-        try context.save()
+        return Tracker(
+            id: trackerCoreData.id ?? UUID(),
+            name: trackerCoreData.name ?? "",
+            color: colorMarshalling.color(from: trackerCoreData.color ?? ""),
+            emoji: trackerCoreData.emoji ?? "",
+            schedule: schedule
+        )
     }
     
-    func deleteTracker(with id: UUID) throws {
-        // Находим трекер по ID
-        let fetchRequest = TrackerCoreData.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
-        
-        guard let tracker = try context.fetch(fetchRequest).first else {
-            throw TrackerError.trackerNotFound
+    func addNewTracker(_ tracker: Tracker, to category: TrackerCategory) throws {
+        try performSync { context in
+            Result {
+                let trackerCoreData = TrackerCoreData(context: context)
+                updateExistingTracker(trackerCoreData, with: tracker)
+                
+                let categoryFetchRequest = TrackerCategoryCoreData.fetchRequest()
+                categoryFetchRequest.predicate = NSPredicate(format: "name == %@", category.name)
+                
+                if let existingCategory = try context.fetch(categoryFetchRequest).first {
+                    trackerCoreData.category = existingCategory
+                } else {
+                    let newCategory = TrackerCategoryCoreData(context: context)
+                    newCategory.name = category.name
+                    trackerCoreData.category = newCategory
+                }
+                
+                try context.save()
+            }
         }
-        
-        // Удаляем трекер и сохраняем изменения
-        context.delete(tracker)
-        try context.save()
+    }
+    
+    func deleteTracker(tracker: TrackerCoreData) throws {
+        try performSync { context in
+            Result {
+                context.delete(tracker)
+                try context.save()
+            }
+        }
     }
 }

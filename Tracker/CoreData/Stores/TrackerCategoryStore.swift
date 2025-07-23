@@ -13,13 +13,27 @@ final class TrackerCategoryStore {
         self.context = context
     }
     
-    func addNewCategory(_ category: TrackerCategory) throws {
-        let trackerCategoryCoreData = TrackerCategoryCoreData(context: context)
-        updateExistingCategory(trackerCategoryCoreData: trackerCategoryCoreData, with: category)
-        try context.save()
+    private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
+        let context = self.context
+        var result: Result<R, Error>!
+        context.performAndWait { result = action(context) }
+        return try result.get()
     }
     
-    func updateExistingCategory(trackerCategoryCoreData: TrackerCategoryCoreData, with category: TrackerCategory) {
+    private func updateExistingCategory(
+        trackerCategoryCoreData: TrackerCategoryCoreData,
+        with category: TrackerCategory
+    ) {
         trackerCategoryCoreData.name = category.name
+    }
+    
+    func addNewCategory(_ category: TrackerCategory) throws {
+        try performSync { context in
+            Result {
+                let trackerCategoryCoreData = TrackerCategoryCoreData(context: context)
+                updateExistingCategory(trackerCategoryCoreData: trackerCategoryCoreData, with: category)
+                try context.save()
+            }
+        }
     }
 }
