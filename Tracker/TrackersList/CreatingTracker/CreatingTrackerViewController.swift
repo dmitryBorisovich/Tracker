@@ -4,9 +4,21 @@ final class CreatingTrackerViewController: UIViewController {
     
     // MARK: - UI
     
+    private enum Strings {
+        static let navigationTitle = "Создание трекера"
+        static let habitTitle = "Привычка"
+        static let eventTitle = "Нерегулярное событие"
+    }
+    
+    private enum ButtonTag: Int {
+        case habit = 0
+        case irregularEvent = 1
+    }
+    
     private lazy var habitButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Привычка", for: .normal)
+        button.setTitle(Strings.habitTitle, for: .normal)
+        button.tag = ButtonTag.habit.rawValue
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.tWhite, for: .normal)
         button.backgroundColor = .tBlack
@@ -14,7 +26,7 @@ final class CreatingTrackerViewController: UIViewController {
         button.layer.cornerRadius = 16
         button.addTarget(
             self,
-            action: #selector(habitButtonPressed),
+            action: #selector(someButtonPressed),
             for: .touchUpInside
         )
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -24,7 +36,8 @@ final class CreatingTrackerViewController: UIViewController {
     
     private lazy var irregularEventButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Нерегулярное событие", for: .normal)
+        button.setTitle(Strings.eventTitle, for: .normal)
+        button.tag = ButtonTag.irregularEvent.rawValue
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.tWhite, for: .normal)
         button.backgroundColor = .tBlack
@@ -32,7 +45,7 @@ final class CreatingTrackerViewController: UIViewController {
         button.layer.cornerRadius = 16
         button.addTarget(
             self,
-            action: #selector(irregularEventButtonPressed),
+            action: #selector(someButtonPressed),
             for: .touchUpInside
         )
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -66,7 +79,7 @@ final class CreatingTrackerViewController: UIViewController {
     // MARK: - Methods
     
     private func setUpScreen() {
-        navigationItem.title = "Создание трекера"
+        navigationItem.title = Strings.navigationTitle
         navigationController?.navigationBar.tintColor = .tBlack
         navigationController?.navigationBar.titleTextAttributes = [
             .font: UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -82,15 +95,10 @@ final class CreatingTrackerViewController: UIViewController {
         ])
     }
     
-    @objc private func habitButtonPressed() {
-        let newHabitViewController = NewHabitViewController()
-        newHabitViewController.delegate = delegate
-        navigationController?.pushViewController(newHabitViewController, animated: true)
-    }
-    
-    @objc private func irregularEventButtonPressed() {
-        let newEventViewController = NewEventViewController()
-        newEventViewController.delegate = delegate
-        navigationController?.pushViewController(newEventViewController, animated: true)
+    @objc private func someButtonPressed(_ sender: UIButton) {
+        let isScheduleNeeded = sender.tag == ButtonTag.habit.rawValue
+        let trackerVC = TrackerSetupViewController(isScheduleNeeded: isScheduleNeeded)
+        trackerVC.delegate = delegate
+        navigationController?.pushViewController(trackerVC, animated: true)
     }
 }

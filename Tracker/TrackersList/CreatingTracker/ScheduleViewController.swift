@@ -8,9 +8,14 @@ final class ScheduleViewController: UIViewController {
     
     // MARK: - UI
     
+    private enum Strings {
+        static let navigationTitle = "Расписание"
+        static let completeTitle = "Готово"
+    }
+    
     private lazy var completeButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Готово", for: .normal)
+        button.setTitle(Strings.completeTitle, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.tWhite, for: .normal)
         button.backgroundColor = .tBlack
@@ -73,7 +78,7 @@ final class ScheduleViewController: UIViewController {
     
     private func setUpNavigationBar() {
         navigationItem.hidesBackButton = true
-        navigationItem.title = "Расписание"
+        navigationItem.title = Strings.navigationTitle
         navigationController?.navigationBar.tintColor = .tBlack
         navigationController?.navigationBar.titleTextAttributes = [
             .font: UIFont.systemFont(ofSize: 16, weight: .medium)
