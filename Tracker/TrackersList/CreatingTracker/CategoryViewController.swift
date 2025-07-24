@@ -4,7 +4,7 @@ struct MockTrackers {
     static let shared = MockTrackers()
     let categories = [
         TrackerCategory(
-            name: "Категория",
+            name: "Спорт",
             trackers: [])
     ]
 }
@@ -17,9 +17,14 @@ final class CategoryViewController: UIViewController {
     
     // MARK: - UI
     
+    private enum Strings {
+        static let navigationTitle = "Категория"
+        static let addCategoryTitle = "Добавить категорию"
+    }
+    
     private lazy var addCategoryButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Добавить категорию", for: .normal)
+        button.setTitle(Strings.addCategoryTitle, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.tWhite, for: .normal)
         button.backgroundColor = .tBlack
@@ -123,7 +128,7 @@ final class CategoryViewController: UIViewController {
     
     private func setUpNavigationBar() {
         navigationItem.hidesBackButton = true
-        navigationItem.title = "Категория"
+        navigationItem.title = Strings.navigationTitle
         navigationController?.navigationBar.tintColor = .tBlack
         navigationController?.navigationBar.titleTextAttributes = [
             .font: UIFont.systemFont(ofSize: 16, weight: .medium)

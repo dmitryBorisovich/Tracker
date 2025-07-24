@@ -56,18 +56,6 @@ final class TrackerRecordStore {
         )
         let result = try context.fetch(trackerRecordFetch)
         
-        if result.isEmpty {
-            return false
-        }
-        else {
-            return true
-        }
+        return !result.isEmpty
     }
 }
-
-//private func performSync<R>(_ action: (NSManagedObjectContext) -> Result<R, Error>) throws -> R {
-//    let context = self.context
-//    var result: Result<R, Error>!
-//    context.performAndWait { result = action(context) }
-//    return try result.get()
-//}

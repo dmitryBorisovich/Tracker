@@ -4,9 +4,20 @@ final class CreatingTrackerViewController: UIViewController {
     
     // MARK: - UI
     
+    private enum Strings {
+        static let navigationTitle = "Создание трекера"
+        static let habitTitle = "Привычка"
+        static let eventTitle = "Нерегулярное событие"
+    }
+    
+    private enum ButtonTag: Int {
+        case habit = 0
+        case irregularEvent = 1
+    }
+    
     private lazy var habitButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Привычка", for: .normal)
+        button.setTitle(Strings.habitTitle, for: .normal)
         button.tag = ButtonTag.habit.rawValue
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.tWhite, for: .normal)
@@ -25,7 +36,7 @@ final class CreatingTrackerViewController: UIViewController {
     
     private lazy var irregularEventButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Нерегулярное событие", for: .normal)
+        button.setTitle(Strings.eventTitle, for: .normal)
         button.tag = ButtonTag.irregularEvent.rawValue
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         button.setTitleColor(.tWhite, for: .normal)
@@ -54,11 +65,6 @@ final class CreatingTrackerViewController: UIViewController {
         return stackView
     }()
     
-    private enum ButtonTag: Int {
-        case habit = 0
-        case irregularEvent = 1
-    }
-    
     // MARK: - Properties
     
     weak var delegate: TrackerCreatingDelegate?
@@ -73,7 +79,7 @@ final class CreatingTrackerViewController: UIViewController {
     // MARK: - Methods
     
     private func setUpScreen() {
-        navigationItem.title = "Создание трекера"
+        navigationItem.title = Strings.navigationTitle
         navigationController?.navigationBar.tintColor = .tBlack
         navigationController?.navigationBar.titleTextAttributes = [
             .font: UIFont.systemFont(ofSize: 16, weight: .medium)

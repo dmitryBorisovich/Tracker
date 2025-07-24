@@ -13,7 +13,7 @@ final class CoreDataManager {
         container = NSPersistentContainer(name: "TrackersModel")
         container.loadPersistentStores { description, error in
             if let error = error as NSError? {
-                fatalError(error.localizedDescription)
+                assertionFailure(error.localizedDescription)
             }
         }
     }
