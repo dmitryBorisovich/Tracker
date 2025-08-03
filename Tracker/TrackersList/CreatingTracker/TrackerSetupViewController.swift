@@ -361,7 +361,6 @@ extension TrackerSetupViewController: UITableViewDelegate {
         switch indexPath.row {
         case 0:
             showCategoryViewController()
-            //TODO: Реализовать создание новой категории (спринт 15)
         default:
             showScheduleViewController()
         }
@@ -561,7 +560,11 @@ extension TrackerSetupViewController: CategoryViewControllerDelegate {
     
     private func showCategoryViewController() {
         let categoryVC = CategoryViewController(selectedCategoryName: selectedCategory)
+        let categoryModel = TrackerCategoryStore()
+        let categoryViewModel = CategoryViewModel(model: categoryModel)
+        categoryVC.initialize(viewModel: categoryViewModel)
         categoryVC.delegate = self
+        
         navigationController?.pushViewController(categoryVC, animated: true)
     }
 }

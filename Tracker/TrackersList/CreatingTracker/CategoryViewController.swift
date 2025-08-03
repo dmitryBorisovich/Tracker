@@ -1,17 +1,21 @@
 import UIKit
 
-struct MockTrackers {
-    static let shared = MockTrackers()
-    let categories = [
-        TrackerCategory(
-            name: "Спорт",
-            trackers: [])
-    ]
-}
+//struct MockTrackers {
+//    static let shared = MockTrackers()
+//    let categories = [
+//        TrackerCategory(
+//            name: "Спорт",
+//            trackers: [])
+//    ]
+//}
 
 protocol CategoryViewControllerDelegate: AnyObject {
     func didSelectCategory(name: String)
 }
+
+//protocol CategoryViewModelProtocol: AnyObject {
+//    func countCategories() -> Int
+//}
 
 final class CategoryViewController: UIViewController {
     
@@ -48,10 +52,12 @@ final class CategoryViewController: UIViewController {
     
     // MARK: - Properties
     
-    private let mockTrackers = MockTrackers.shared
+//    private let mockTrackers = MockTrackers.shared
     private let categoryCellIdentifier = "dayOfWeek"
     
-    private var categories: [TrackerCategory] = []
+    private var viewModel: CategoryViewModel?
+    
+//    private var categories: [TrackerCategory] = []
     
     private var selectedCategoryIndex: Int? {
         didSet {
@@ -72,7 +78,7 @@ final class CategoryViewController: UIViewController {
     private var selectedCategoryName: String? {
         didSet {
             if let name = selectedCategoryName,
-               let index = categories.firstIndex(where: { $0.name == name }) {
+               let index = viewModel?.getCategoryIndex(for: name) {
                 selectedCategoryIndex = index
             }
         }
@@ -96,10 +102,11 @@ final class CategoryViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpScreen()
-        categories = mockTrackers.categories
-        if let selectedCategoryName {
-            selectedCategoryIndex = categories.firstIndex(where: { $0.name == selectedCategoryName })
-        }
+//        categories = mockTrackers.categories
+//        if let selectedCategoryName {
+//            selectedCategoryIndex = categories.firstIndex(where: { $0.name == selectedCategoryName })
+//        }
+        bind()
     }
     
     // MARK: - Methods
@@ -136,7 +143,35 @@ final class CategoryViewController: UIViewController {
     }
     
     @objc private func addCategoryButtonPressed() {
-        // TODO: Реализовать логику добавления новой категории (спринт 16)
+        let categoryEditorVC = CategoryEditorViewController(.creating)
+        categoryEditorVC.delegate = self
+        navigationController?.pushViewController(categoryEditorVC, animated: true)
+    }
+    
+    private func editCategory(at indexPath: IndexPath) {
+        guard
+            let category = viewModel?.getCategoryName(for: indexPath)
+        else { return }
+        let categoryEditorVC = CategoryEditorViewController(.editing, oldName: category)
+        categoryEditorVC.delegate = self
+        navigationController?.pushViewController(categoryEditorVC, animated: true)
+    }
+    
+    func initialize(viewModel: CategoryViewModel) {
+        self.viewModel = viewModel
+        bind()
+    }
+    
+    func bind() {
+        viewModel?.onCategoriesUpdated = { [weak self] in
+//            guard let self else { return }
+//            if let name = self.selectedCategoryName,
+//               let index = self.viewModel?.getCategoryIndex(for: name) {
+//                self.selectedCategoryIndex = index
+//            }
+            
+            self?.categoryTableView.reloadData()
+        }
     }
 }
 
@@ -145,11 +180,16 @@ final class CategoryViewController: UIViewController {
 extension CategoryViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        categories.count
+//        categories.count
+        viewModel?.countCategories() ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: categoryCellIdentifier, for: indexPath)
+        guard
+            let categoriesAmount = viewModel?.countCategories(),
+            categoriesAmount > 0
+        else { return UITableViewCell() }
         
         cell.selectionStyle = .none
         cell.backgroundColor = .tBackground
@@ -157,21 +197,18 @@ extension CategoryViewController: UITableViewDataSource {
         cell.layer.cornerRadius = 16
         switch indexPath.row {
         case 0: cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        case categories.count - 1: cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        case categoriesAmount - 1: cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         default: cell.layer.maskedCorners = []
         }
         
-        cell.textLabel?.text = categories[indexPath.row].name
+//        cell.textLabel?.text = categories[indexPath.row].name
+        cell.textLabel?.text = viewModel?.getCategoryName(for: indexPath)
         
         let selectedCategoryImageView = UIImageView(image: UIImage(named: "selectTick"))
         let isSelected = indexPath.row == selectedCategoryIndex
         cell.accessoryView = isSelected ? selectedCategoryImageView : nil
         
         return cell
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-
     }
 }
 
@@ -182,12 +219,56 @@ extension CategoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 75 }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let viewModel else { return }
+        
         selectedCategoryIndex = indexPath.row
-        let categoryName = categories[indexPath.row].name
+        let categoryName = viewModel.getCategoryName(for: indexPath)
         selectedCategoryName = categoryName
         
         delegate?.didSelectCategory(name: categoryName)
-        
+        navigationController?.popViewController(animated: true)
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        contextMenuConfigurationForRowAt indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
+        UIContextMenuConfiguration(actionProvider: { actions in
+            UIMenu(children: [
+                UIAction(title: "Редактировать") { [weak self] _ in
+                    self?.editCategory(at: indexPath)
+                },
+                UIAction(
+                    title: "Удалить",
+                    attributes: .destructive
+                ) { [weak self] _ in
+                    self?.viewModel?.deleteCategory(at: indexPath.row)
+                    if self?.selectedCategoryIndex == indexPath.row {
+                        self?.selectedCategoryIndex = nil
+                    }
+                    
+                    DispatchQueue.main.async {
+                        self?.categoryTableView.reloadData()
+                    }
+                }
+            ])
+        })
+    }
+}
+
+// MARK: - CategoryEditViewControllerDelegate
+
+extension CategoryViewController: CategoryEditorViewControllerDelegate {
+    func didEditedNameForCategory(oldName: String, newName: String) {
+        viewModel?.editCategory(oldName: oldName, newName: newName)
+        navigationController?.popViewController(animated: true)
+    }
+    
+    func didSetNameForNewCategory(name: String) {
+        viewModel?.addCategory(name: name)
         navigationController?.popViewController(animated: true)
     }
 }
+
+
