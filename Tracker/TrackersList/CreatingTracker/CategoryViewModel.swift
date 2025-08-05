@@ -8,54 +8,44 @@ final class CategoryViewModel {
     var onError: ((String) -> Void)?
     private var selectedCategoryName: String?
     
-    var categories: [TrackerCategory] = [] {
-        didSet {
-            print("обновляем табличку.......")
-            onCategoriesUpdated?()
-        }
+    var selectedIndexPath: IndexPath? {
+        guard let selectedCategoryName,
+              let index = getCategoryIndex(for: selectedCategoryName)
+        else { return nil }
+        return IndexPath(row: index, section: 0)
     }
     
-    init(model: TrackerCategoryStore) {
+    init(model: TrackerCategoryStore, selectedCategoryName: String? = nil) {
         self.model = model
-        loadCategories()
+        self.model.delegate = self
+        self.selectedCategoryName = selectedCategoryName
     }
     
-    private func loadCategories() {
-        guard let fetchedObjects = model.fetchCategories() else { return }
-        categories = fetchedObjects.map { TrackerCategory(name: $0.name ?? "", trackers: []) }
+    private func doWithErrorHandling(_ operation: () throws -> Void) {
+        do {
+            try operation()
+        } catch let error as CategoryError {
+            onError?(error.localizedDescription)
+        } catch {
+            onError?("Неизвестная ошибка при выполнении операции")
+        }
     }
     
     func addCategory(name: String) {
-        let newCategory = TrackerCategory(name: name, trackers: [])
-        do {
-            try model.addNewCategory(newCategory)
-            categories.append(newCategory)
-        } catch {
-            onError?("Не удалось добавить категорию")
+        doWithErrorHandling {
+            try model.addNewCategory(TrackerCategory(name: name, trackers: []))
         }
     }
     
-    func editCategory(oldName: String, newName: String) {
-        guard let index = categories.firstIndex(where: { $0.name == oldName }) else {
-            onError?("Категория не найдена")
-            return
-        }
-        do {
-            try model.editCategory(oldName, newName: newName)
-            categories.remove(at: index)
-            categories.append(TrackerCategory(name: newName, trackers: []))
-        } catch {
-            onError?("Не удалось отредактировать категорию")
+    func editCategory(at index: IndexPath, newName: String) {
+        doWithErrorHandling {
+            try model.editCategory(at: index, newName: newName)
         }
     }
     
-    func deleteCategory(at index: Int) {
-        let categoryToDelete = categories[index]
-        do {
-            try model.deleteCategory(categoryToDelete.name)
-            categories.remove(at: index)
-        } catch {
-            onError?("Не удалось удалить категорию")
+    func deleteCategory(at index: IndexPath) {
+        doWithErrorHandling {
+            try model.deleteCategory(at: index)
         }
     }
     
@@ -64,25 +54,25 @@ final class CategoryViewModel {
     }
     
     func getCategoryName(for index: IndexPath) -> String {
-        guard index.row < categories.count else {
-            return ""
-        }
-        return categories[index.row].name
-        // TODO: Fatal error: Index out of range
+        let category = model.fetchCategory(at: index)
+        return category.name ?? ""
     }
     
     func getCategoryIndex(for name: String) -> Int? {
-        categories.firstIndex(where: { $0.name == name })
+        guard
+            let categories = model.fetchCategories(),
+            categories.count > 0
+        else { return nil }
+        return categories.firstIndex(where: { $0.name == name })
+    }
+    
+    func selectCategory(name: String) {
+        selectedCategoryName = name
     }
 }
 
-//extension CategoryViewModel: TrackerCategoryStoreDelegate {
-//    func didUpdate(_ update: TrackerCategoryStoreUpdate) {
-//        tableView.performBatchUpdates {
-//            let insertedIndexPaths = update.insertedIndexes.map { IndexPath(item: $0, section: 0) }
-//            let deletedIndexPaths = update.deletedIndexes.map { IndexPath(item: $0, section: 0) }
-//            tableView.insertRows(at: insertedIndexPaths, with: .automatic)
-//            tableView.deleteRows(at: deletedIndexPaths, with: .fade)
-//        }
-//    }
-//}
+extension CategoryViewModel: TrackerCategoryStoreDelegate {
+    func didUpdate() {
+        onCategoriesUpdated?()
+    }
+}

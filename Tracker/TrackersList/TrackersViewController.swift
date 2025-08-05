@@ -1,15 +1,5 @@
 import UIKit
 
-//protocol TrackerStoreProtocol {
-//    var numberOfSections: Int { get }
-//    func numberOfItemsInSection(_ section: Int) -> Int
-//    func tracker(at indexPath: IndexPath) -> Tracker?
-//    func sectionName(_ section: Int) -> String?
-//    func addTracker(_ tracker: Tracker, to category: TrackerCategory) throws
-//    func deleteTracker(at indexPath: IndexPath) throws
-//    func updatePredicate(filterText: String?, date: Date)
-//}
-
 final class TrackersViewController: UIViewController {
     
     // MARK: - UI
@@ -346,54 +336,7 @@ extension TrackersViewController: TrackerCreatingDelegate {
 extension TrackersViewController: TrackerStoreDelegate {
     
     func didUpdate(_ update: TrackerStoreUpdate) {
-//            trackersCollection.performBatchUpdates {
-//                trackersCollection.deleteSections(update.deletedSections)
-//                trackersCollection.insertSections(update.insertedSections)
-//                
-//                update.deletedIndexes.forEach { index in
-//                    let section = update.deletedSections.first ?? 0
-//                    trackersCollection.deleteItems(at: [IndexPath(item: index, section: section)])
-//                }
-//                
-//                update.insertedIndexes.forEach { index in
-//                    let section = update.insertedSections.first ?? 0
-//                    trackersCollection.insertItems(at: [IndexPath(item: index, section: section)])
-//                }
-//                
-//                for move in update.movedIndexes {
-//                    trackersCollection.moveItem(
-//                        at: IndexPath(item: move.oldIndex, section: move.oldSection),
-//                        to: IndexPath(item: move.newIndex, section: move.newSection)
-//                    )
-//                }
-//            } completion: { [weak self] _ in
-//                // Обновляем изменённые ячейки
-//                if !update.updatedIndexes.isEmpty {
-//                    self?.trackersCollection.reloadItems(at: update.updatedIndexes.map {
-//                        IndexPath(item: $0, section: update.insertedSections.first ?? 0)
-//                    })
-//                }
-//                self?.reloadPlaceholder()
-//            }
-        
         trackersCollection.reloadData()
         //TODO: - Доделать performBatchUpdates
     }
-    
-//    func didUpdate(_ update: TrackerStoreUpdate) {
-//        trackersCollection.performBatchUpdates {
-//            trackersCollection.insertSections(update.insertedSections)
-//            trackersCollection.deleteSections(update.deletedSections)
-//            
-//            let insertedIndexPaths = update.insertedIndexes.map { index in
-//                IndexPath(item: index, section: update.insertedSections.first ?? 0)
-//            }
-//            let deletedIndexPaths = update.deletedIndexes.map { index in
-//                IndexPath(item: index, section: update.deletedSections.first ?? 0)
-//            }
-//            trackersCollection.insertItems(at: insertedIndexPaths)
-//            trackersCollection.deleteItems(at: deletedIndexPaths)
-//        }
-//        trackersCollection.reloadData()
-//    }
 }

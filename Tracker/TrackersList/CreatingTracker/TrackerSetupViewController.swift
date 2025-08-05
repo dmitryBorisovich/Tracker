@@ -559,9 +559,12 @@ extension TrackerSetupViewController: CategoryViewControllerDelegate {
     }
     
     private func showCategoryViewController() {
-        let categoryVC = CategoryViewController(selectedCategoryName: selectedCategory)
+        let categoryVC = CategoryViewController()
         let categoryModel = TrackerCategoryStore()
-        let categoryViewModel = CategoryViewModel(model: categoryModel)
+        let categoryViewModel = CategoryViewModel(
+            model: categoryModel,
+            selectedCategoryName: selectedCategory
+        )
         categoryVC.initialize(viewModel: categoryViewModel)
         categoryVC.delegate = self
         

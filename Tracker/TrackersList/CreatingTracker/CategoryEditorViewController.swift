@@ -1,7 +1,7 @@
 import UIKit
 
 protocol CategoryEditorViewControllerDelegate: AnyObject {
-    func didEditedNameForCategory(oldName: String, newName: String)
+    func didEditedNameForCategory(at index: IndexPath, newName: String)
     func didSetNameForNewCategory(name: String)
 }
 
@@ -37,7 +37,7 @@ final class CategoryEditorViewController: UIViewController {
     
     private lazy var categoryNameTextField: UITextField = {
         let textField = UITextField()
-        textField.text = action == .creating ? nil : oldCategoryName
+        textField.text = action == .creating ? nil : oldName
         textField.placeholder = Strings.placeholderTitle
         textField.font = .systemFont(ofSize: 17)
         textField.backgroundColor = .tBackground
@@ -73,16 +73,18 @@ final class CategoryEditorViewController: UIViewController {
     // MARK: - Properties
     
     private let action: CategoryOperation
-    private var oldCategoryName: String?
+    private let index: IndexPath?
+    private let oldName: String?
     private var newCategoryName: String?
     
     weak var delegate: CategoryEditorViewControllerDelegate?
     
     // MARK: - Init
     
-    init(_ action: CategoryOperation, oldName: String? = nil) {
+    init(_ action: CategoryOperation, index: IndexPath? = nil, currentName: String? = nil) {
         self.action = action
-        self.oldCategoryName = oldName
+        self.index = index
+        self.oldName = currentName
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -150,13 +152,9 @@ final class CategoryEditorViewController: UIViewController {
         if action == .creating {
             delegate?.didSetNameForNewCategory(name: newCategoryName)
         } else {
-            guard let oldCategoryName else { return }
-            delegate?.didEditedNameForCategory(
-                oldName: oldCategoryName,
-                newName: newCategoryName
-            )
+            guard let index else { return }
+            delegate?.didEditedNameForCategory(at: index, newName: newCategoryName)
         }
-//        navigationController?.popViewController(animated: true)
     }
 }
 
