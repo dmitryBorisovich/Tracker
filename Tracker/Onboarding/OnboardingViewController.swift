@@ -4,8 +4,6 @@ final class OnboardingViewController: UIPageViewController {
     
     private enum Strings {
         static let buttonTitle = "Вот это технологии!"
-        static let firstVCtext = "Отслеживайте только то, что хотите"
-        static let secondVCtext = "Даже если это не литры воды и йога"
         static let onboardingCompletedKey = "onboardingCompleted"
     }
     
