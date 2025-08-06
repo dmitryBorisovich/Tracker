@@ -263,13 +263,30 @@ extension TrackersViewController: UICollectionViewDelegate {
         contextMenuConfigurationForItemAt indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(actionProvider: { actions in
-            return UIMenu(children: [
-                UIAction(title: "Удалить") { [weak self] _ in
-                    self?.deleteTracker(index: indexPath)
-                }
-            ])
-        })
+        UIContextMenuConfiguration(
+            identifier: indexPath as NSCopying,
+            previewProvider: nil,
+            actionProvider: { _ in
+                UIMenu(children: [
+                    UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
+                        self?.deleteTracker(index: indexPath)
+                    }
+                ])
+            }
+        )
+    }
+    
+    func collectionView(
+        _ collectionView: UICollectionView,
+        previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
+    ) -> UITargetedPreview? {
+        guard let indexPath = configuration.identifier as? IndexPath,
+              let cell = collectionView.cellForItem(at: indexPath) as? TrackersCollectionViewCell
+        else { return nil }
+        
+        let parameters = UIPreviewParameters()
+        parameters.backgroundColor = .clear
+        return UITargetedPreview(view: cell.colorView, parameters: parameters)
     }
 }
 // MARK: - UITextFieldDelegate

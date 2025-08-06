@@ -174,6 +174,7 @@ extension CategoryEditorViewController: UITextFieldDelegate {
         
         textStatusLabel.text = nil
         textFieldStackView.spacing = 0
+        newCategoryName = updatedText.isEmpty ? nil : updatedText
         return true
     }
     
@@ -186,6 +187,12 @@ extension CategoryEditorViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         newCategoryName = textField.text
         updateCreateButtonState()
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        newCategoryName = nil
+        updateCreateButtonState()
+        return true
     }
 }
 

@@ -383,6 +383,7 @@ extension TrackerSetupViewController: UITextFieldDelegate {
         
         textStatusLabel.text = nil
         textFieldStackView.spacing = 0
+        trackerName = updatedText.isEmpty ? nil : updatedText
         return true
     }
     
@@ -395,6 +396,12 @@ extension TrackerSetupViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         trackerName = textField.text
         updateCreateButtonState()
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        trackerName = nil
+        updateCreateButtonState()
+        return true
     }
 }
 

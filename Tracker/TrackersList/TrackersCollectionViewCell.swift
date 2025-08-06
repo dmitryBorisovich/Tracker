@@ -19,7 +19,7 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
         return label
     }()
     
-    private lazy var colorView: UIView = {
+    lazy var colorView: UIView = {
         let colorView = UIView()
         colorView.layer.cornerRadius = 16
         colorView.layer.borderWidth = 1
