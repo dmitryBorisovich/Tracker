@@ -384,6 +384,7 @@ extension TrackerSetupViewController: UITextFieldDelegate {
         textStatusLabel.text = nil
         textFieldStackView.spacing = 0
         trackerName = updatedText.isEmpty ? nil : updatedText
+        updateCreateButtonState()
         return true
     }
     

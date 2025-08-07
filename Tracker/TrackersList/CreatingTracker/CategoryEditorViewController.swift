@@ -110,6 +110,7 @@ final class CategoryEditorViewController: UIViewController {
         categoryNameTextField.delegate = self
         
         setUpConstraints()
+        updateCreateButtonState()
     }
     
     private func setUpConstraints() {
@@ -175,6 +176,7 @@ extension CategoryEditorViewController: UITextFieldDelegate {
         textStatusLabel.text = nil
         textFieldStackView.spacing = 0
         newCategoryName = updatedText.isEmpty ? nil : updatedText
+        updateCreateButtonState()
         return true
     }
     
