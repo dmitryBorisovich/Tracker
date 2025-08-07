@@ -86,7 +86,9 @@ final class ScheduleViewController: UIViewController {
     }
     
     @objc private func completeButtonPressed() {
-        delegate?.didSelectDays(days: Array(selectedDays).sorted(by: { $0.rawValue < $1.rawValue }))
+        delegate?.didSelectDays(
+            days: Array(selectedDays).sorted(by: { $0.rawValue < $1.rawValue })
+        )
         navigationController?.popViewController(animated: true)
     }
     
@@ -117,8 +119,10 @@ extension ScheduleViewController: UITableViewDataSource {
         cell.layer.masksToBounds = true
         cell.layer.cornerRadius = 16
         switch indexPath.row {
-        case 0: cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        case DaysOfWeek.allCases.count - 1: cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
+        case 0:
+            cell.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
+        case DaysOfWeek.allCases.count - 1:
+            cell.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         default: cell.layer.maskedCorners = []
         }
         

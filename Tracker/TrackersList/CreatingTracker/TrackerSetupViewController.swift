@@ -361,7 +361,6 @@ extension TrackerSetupViewController: UITableViewDelegate {
         switch indexPath.row {
         case 0:
             showCategoryViewController()
-            //TODO: Реализовать создание новой категории (спринт 15)
         default:
             showScheduleViewController()
         }
@@ -384,6 +383,8 @@ extension TrackerSetupViewController: UITextFieldDelegate {
         
         textStatusLabel.text = nil
         textFieldStackView.spacing = 0
+        trackerName = updatedText.isEmpty ? nil : updatedText
+        updateCreateButtonState()
         return true
     }
     
@@ -396,6 +397,12 @@ extension TrackerSetupViewController: UITextFieldDelegate {
     func textFieldDidEndEditing(_ textField: UITextField) {
         trackerName = textField.text
         updateCreateButtonState()
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        trackerName = nil
+        updateCreateButtonState()
+        return true
     }
 }
 
@@ -560,8 +567,15 @@ extension TrackerSetupViewController: CategoryViewControllerDelegate {
     }
     
     private func showCategoryViewController() {
-        let categoryVC = CategoryViewController(selectedCategoryName: selectedCategory)
+        let categoryVC = CategoryViewController()
+        let categoryModel = TrackerCategoryStore()
+        let categoryViewModel = CategoryViewModel(
+            model: categoryModel,
+            selectedCategoryName: selectedCategory
+        )
+        categoryVC.initialize(viewModel: categoryViewModel)
         categoryVC.delegate = self
+        
         navigationController?.pushViewController(categoryVC, animated: true)
     }
 }
