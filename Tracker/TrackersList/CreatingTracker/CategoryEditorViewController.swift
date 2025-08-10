@@ -14,13 +14,6 @@ final class CategoryEditorViewController: UIViewController {
     
     // MARK: - UI
     
-    private enum Strings {
-        static let navNewCategoryTitle = "Новая категория"
-        static let placeholderTitle = "Введите название категории"
-        static let navEditCategoryTitle = "Редактирование категории"
-        static let completeButtonTitle = "Готово"
-    }
-    
     private lazy var completeButton: UIButton = {
         let button = UIButton()
         button.setTitle(Strings.completeButtonTitle, for: .normal)
@@ -168,7 +161,7 @@ extension CategoryEditorViewController: UITextFieldDelegate {
         let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
         
         if updatedText.count > 38 {
-            textStatusLabel.text = "Ограничение 38 символов"
+            textStatusLabel.text = Strings.nameStatusText
             textFieldStackView.spacing = 8
             return false
         }
@@ -195,6 +188,37 @@ extension CategoryEditorViewController: UITextFieldDelegate {
         newCategoryName = nil
         updateCreateButtonState()
         return true
+    }
+}
+
+// MARK: - CategoryEditorViewController strings
+
+extension CategoryEditorViewController {
+    private enum Strings {
+        static let navNewCategoryTitle = NSLocalizedString(
+            "categoryEditor.createNavTitle",
+            comment: "navigation title text"
+        )
+        
+        static let navEditCategoryTitle = NSLocalizedString(
+            "categoryEditor.editNavTitle",
+            comment: "navigation title text"
+        )
+        
+        static let placeholderTitle = NSLocalizedString(
+            "categoryEditor.textFieldPlaceholder",
+            comment: "text for textField placeholder"
+        )
+        
+        static let completeButtonTitle = NSLocalizedString(
+            "categoryEditor.completeButtonText",
+            comment: "text for completeButton"
+        )
+        
+        static let nameStatusText = NSLocalizedString(
+            "categoryEditor.nameStatusText",
+            comment: "text about character limit"
+        )
     }
 }
 

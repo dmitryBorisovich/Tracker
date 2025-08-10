@@ -8,11 +8,6 @@ final class CategoryViewController: UIViewController {
     
     // MARK: - UI
     
-    private enum Strings {
-        static let navigationTitle = "Категория"
-        static let addCategoryTitle = "Добавить категорию"
-    }
-    
     private lazy var addCategoryButton: UIButton = {
         let button = UIButton()
         button.setTitle(Strings.addCategoryTitle, for: .normal)
@@ -39,7 +34,7 @@ final class CategoryViewController: UIViewController {
     
     private lazy var placeholder: PlaceholderView = {
         let placeholder = PlaceholderView(
-            title: "Привычки и события можно объединить по смыслу"
+            title: Strings.emptyListPlaceholder
         )
         placeholder.isHidden = true
         placeholder.isUserInteractionEnabled = false
@@ -143,20 +138,20 @@ final class CategoryViewController: UIViewController {
     
     private func showDeleteConfirmation(for indexPath: IndexPath) {
         let alert = UIAlertController(
-            title: "Эта категория точно не нужна?",
+            title: Strings.deleteConfirmationMessage,
             message: nil,
             preferredStyle: .actionSheet
         )
         
         let deleteAction = UIAlertAction(
-            title: "Удалить",
+            title: Strings.confirmDeletingText,
             style: .destructive
         ) { [weak self] _ in
             self?.viewModel?.deleteCategory(at: indexPath)
         }
         
         let cancelAction = UIAlertAction(
-            title: "Отменить",
+            title: Strings.cancelDeletingText,
             style: .cancel
         )
         
@@ -226,11 +221,11 @@ extension CategoryViewController: UITableViewDelegate {
     ) -> UIContextMenuConfiguration? {
         UIContextMenuConfiguration(actionProvider: { actions in
             UIMenu(children: [
-                UIAction(title: "Редактировать") { [weak self] _ in
+                UIAction(title: Strings.editCategoryText) { [weak self] _ in
                     self?.editCategory(at: indexPath)
                 },
                 UIAction(
-                    title: "Удалить",
+                    title: Strings.deleteCategoryText,
                     attributes: .destructive
                 ) { [weak self] _ in
                     self?.showDeleteConfirmation(for: indexPath)
@@ -254,4 +249,47 @@ extension CategoryViewController: CategoryEditorViewControllerDelegate {
     }
 }
 
+extension CategoryViewController {
+    private enum Strings {
+        static let navigationTitle = NSLocalizedString(
+            "category.navTitle",
+            comment: "navigation title text"
+        )
+        
+        static let addCategoryTitle = NSLocalizedString(
+            "category.addButton",
+            comment: "text for addCategoryButton"
+        )
+        
+        static let emptyListPlaceholder = NSLocalizedString(
+            "category.emptyListPlaceholder",
+            comment: "placeholder text for empty list"
+        )
+        
+        static let deleteCategoryText = NSLocalizedString(
+            "category.deleteCategory",
+            comment: "context menu deleting category"
+        )
+        
+        static let deleteConfirmationMessage = NSLocalizedString(
+            "category.deleteConfirmation",
+            comment: "message for category deleting confirmation"
+        )
+        
+        static let cancelDeletingText = NSLocalizedString(
+            "category.cancelDeleting",
+            comment: "cancel deleting category"
+        )
+        
+        static let confirmDeletingText = NSLocalizedString(
+            "category.confirmDeleting",
+            comment: "confirm deleting category"
+        )
+        
+        static let editCategoryText = NSLocalizedString(
+            "category.editCategory",
+            comment: "context menu editing category"
+        )
+    }
+}
 

@@ -4,12 +4,6 @@ final class CreatingTrackerViewController: UIViewController {
     
     // MARK: - UI
     
-    private enum Strings {
-        static let navigationTitle = "Создание трекера"
-        static let habitTitle = "Привычка"
-        static let eventTitle = "Нерегулярное событие"
-    }
-    
     private enum ButtonTag: Int {
         case habit = 0
         case irregularEvent = 1
@@ -100,5 +94,26 @@ final class CreatingTrackerViewController: UIViewController {
         let trackerVC = TrackerSetupViewController(isScheduleNeeded: isScheduleNeeded)
         trackerVC.delegate = delegate
         navigationController?.pushViewController(trackerVC, animated: true)
+    }
+}
+
+// MARK: - CreatingTrackerViewController strings
+
+extension CreatingTrackerViewController {
+    private enum Strings {
+        static let navigationTitle = NSLocalizedString(
+            "creatingTracker.navTitle",
+            comment: "navigation title text"
+        )
+        
+        static let habitTitle = NSLocalizedString(
+            "creatingTracker.habitButton",
+            comment: "habit button text"
+        )
+        
+        static let eventTitle = NSLocalizedString(
+            "creatingTracker.eventButton",
+            comment: "event button text"
+        )
     }
 }

@@ -10,7 +10,7 @@ final class TrackerSetupViewController: UIViewController {
     
     private lazy var trackerNameTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Название привычки"
+        textField.placeholder = Strings.textFieldPlaceholder
         textField.font = .systemFont(ofSize: 17)
         textField.backgroundColor = .tBackground
         textField.layer.cornerRadius = 16
@@ -48,7 +48,7 @@ final class TrackerSetupViewController: UIViewController {
     
     private lazy var cancelButton: UIButton = {
         let cancelButton = UIButton()
-        cancelButton.setTitle("Отменить", for: .normal)
+        cancelButton.setTitle(Strings.cancelButtonText, for: .normal)
         cancelButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         cancelButton.setTitleColor(.tRed, for: .normal)
         cancelButton.backgroundColor = .clear
@@ -63,7 +63,7 @@ final class TrackerSetupViewController: UIViewController {
     
     private lazy var createButton: UIButton = {
         let createButton = UIButton()
-        createButton.setTitle("Создать", for: .normal)
+        createButton.setTitle(Strings.createButtonText, for: .normal)
         createButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
         createButton.titleLabel?.textColor = .tWhite
         createButton.backgroundColor = .tGray
@@ -107,7 +107,7 @@ final class TrackerSetupViewController: UIViewController {
     // MARK: - Properties
     
     private let habitParamsCellIdentifier = "habitParamsCell"
-    private var trackerAttributes = ["Категория"]
+    private var trackerAttributes = [Strings.categoryCellName]
     private var isScheduleNeeded = false
     
     private let trackerParamsCellIdentifier = "trackerParamsCell"
@@ -130,7 +130,7 @@ final class TrackerSetupViewController: UIViewController {
     init(isScheduleNeeded: Bool) {
         super.init(nibName: nil, bundle: nil)
         if isScheduleNeeded {
-            trackerAttributes.append("Расписание")
+            trackerAttributes.append(Strings.scheduleCellName)
             self.isScheduleNeeded = true
         }
     }
@@ -198,7 +198,9 @@ final class TrackerSetupViewController: UIViewController {
     
     private func setUpNavigationBar() {
         navigationItem.hidesBackButton = true
-        navigationItem.title = isScheduleNeeded ? "Новая привычка" : "Новое нерегулярное событие"
+        navigationItem.title = isScheduleNeeded 
+            ? Strings.habitNavTitleText
+            : Strings.eventNavTitleText
         navigationController?.navigationBar.tintColor = .tBlack
         navigationController?.navigationBar.titleTextAttributes = [
             .font: UIFont.systemFont(ofSize: 16, weight: .medium)
@@ -376,7 +378,7 @@ extension TrackerSetupViewController: UITextFieldDelegate {
         let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
         
         if updatedText.count > 38 {
-            textStatusLabel.text = "Ограничение 38 символов"
+            textStatusLabel.text = Strings.nameStatusText
             textFieldStackView.spacing = 8
             return false
         }
@@ -444,7 +446,9 @@ extension TrackerSetupViewController: UICollectionViewDataSource {
             ) as? TrackersSupplementaryView
         else { return UICollectionReusableView() }
         
-        header.titleLabel.text = indexPath.section == 0 ? "Emoji" : "Цвет"
+        header.titleLabel.text = indexPath.section == 0 
+            ? Strings.emojiHeaderText
+            : Strings.colorHeaderText
         
         return header
     }
@@ -536,7 +540,7 @@ extension TrackerSetupViewController: ScheduleViewControllerDelegate {
     
     private func updateScheduleDisplay() {
         if selectedDays.count == DaysOfWeek.allCases.count {
-            scheduleLabel = "Каждый день"
+            scheduleLabel = Strings.everyDayScheduleText
         } else if selectedDays.isEmpty {
             scheduleLabel = nil
         } else {
@@ -603,3 +607,64 @@ extension TrackerSetupViewController: TrackerParamsCollectionViewCellDelegate {
         updateCreateButtonState()
     }
 }
+
+// MARK: - TrackerSetupViewController strings
+
+extension TrackerSetupViewController {
+    private enum Strings {
+        static let habitNavTitleText = NSLocalizedString(
+            "trackerSetup.createHabitNavTitle",
+            comment: "navigation title text"
+        )
+        
+        static let eventNavTitleText = NSLocalizedString(
+            "trackerSetup.createEventNavTitle",
+            comment: "navigation title text"
+        )
+        
+        static let textFieldPlaceholder = NSLocalizedString(
+            "trackerSetup.textFieldPlaceholder",
+            comment: "textField placeholder text"
+        )
+        
+        static let cancelButtonText = NSLocalizedString(
+            "trackerSetup.cancelButtonText",
+            comment: "text for cancelButton"
+        )
+        static let createButtonText = NSLocalizedString(
+            "trackerSetup.createButtonText",
+            comment: "text for createButton"
+        )
+        
+        static let categoryCellName = NSLocalizedString(
+            "trackerSetup.categoryCell",
+            comment: "name for category cell"
+        )
+        
+        static let scheduleCellName = NSLocalizedString(
+            "trackerSetup.scheduleCell",
+            comment: "name for schedule cell"
+        )
+        
+        static let nameStatusText = NSLocalizedString(
+            "trackerSetup.nameStatusText",
+            comment: "text about character limit"
+        )
+        
+        static let emojiHeaderText = NSLocalizedString(
+            "trackerSetup.emojiHeader",
+            comment: "name for emoji header"
+        )
+        
+        static let colorHeaderText = NSLocalizedString(
+            "trackerSetup.colorHeader",
+            comment: "name for color header"
+        )
+        
+        static let everyDayScheduleText = NSLocalizedString(
+            "trackerSetup.everyDaySchedule",
+            comment: "text for daily habit"
+        )
+    }
+}
+

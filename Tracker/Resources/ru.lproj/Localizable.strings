@@ -1,0 +1,68 @@
+"onboarding.button" = "Вот это технологии!";
+"onboarding.firstPageText" = "Отслеживайте только то, что хотите";
+"onboarding.secondPageText" = "Даже если это не литры воды и йога";
+
+"tabBar.trackersTitle" = "Трекеры";
+"tabBar.statisticTitle" = "Статистика";
+
+"weekday.monday.full" = "Понедельник";
+"weekday.tuesday.full" = "Вторник";
+"weekday.wednesday.full" = "Среда";
+"weekday.thursday.full" = "Четверг";
+"weekday.friday.full" = "Пятница";
+"weekday.saturday.full" = "Суббота";
+"weekday.sunday.full" = "Воскресенье";
+"weekday.monday.short" = "Пн";
+"weekday.tuesday.short" = "Вт";
+"weekday.wednesday.short" = "Ср";
+"weekday.thursday.short" = "Чт";
+"weekday.friday.short" = "Пт";
+"weekday.saturday.short" = "Сб";
+"weekday.sunday.short" = "Вс";
+"weekday.allDays" = "Каждый день";
+
+"trackers.navigationTitle" = "Трекеры";
+"trackers.searchFieldPlaceholder" = "Поиск";
+"trackers.EmptyListPlaceholder" = "Что будем отслеживать?";
+"trackers.deleteTracker" = "Удалить";
+"trackers.deleteConfirmation" = "Уверены что хотите удалить трекер?";
+"trackers.cancelDeleting" = "Отменить";
+"trackers.confirmDeleting" = "Удалить";
+"trackers.editTracker" = "Редактировать";
+
+"trackerSetup.createHabitNavTitle" = "Новая привычка";
+"trackerSetup.createEventNavTitle" = "Новое нерегулярное событие";
+"trackerSetup.editHabitNavTitle" = "Редактирование привычки";
+"trackerSetup.editEventNavTitle" = "Редактирование нерегулярного события";
+"trackerSetup.textFieldPlaceholder" = "Название привычки";
+"trackerSetup.cancelButtonText" = "Отменить";
+"trackerSetup.createButtonText" = "Создать";
+"trackerSetup.saveButtonText" = "Сохранить";
+"trackerSetup.categoryCell" = "Категория";
+"trackerSetup.scheduleCell" = "Расписание";
+"trackerSetup.nameStatusText" = "Ограничение 38 символов";
+"trackerSetup.emojiHeader" = "Emoji";
+"trackerSetup.colorHeader" = "Цвет";
+"trackerSetup.everyDaySchedule" = "Каждый день";
+
+"schedule.completeButtonText" = "Готово";
+"schedule.navTitle" = "Расписание";
+
+"creatingTracker.navTitle" = "Создание трекера";
+"creatingTracker.habitButton" = "Привычка";
+"creatingTracker.eventButton" = "Нерегулярное событие";
+
+"category.navTitle" = "Категория";
+"category.addButton" = "Добавить категорию";
+"category.emptyListPlaceholder" = "Привычки и события можно объединить по смыслу";
+"category.deleteCategory" = "Удалить";
+"category.deleteConfirmation" = "Эта категория точно не нужна?";
+"category.cancelDeleting" = "Отменить";
+"category.confirmDeleting" = "Удалить";
+"category.editCategory" = "Редактировать";
+
+"categoryEditor.createNavTitle" = "Новая категория";
+"categoryEditor.editNavTitle" = "Редактирование категории";
+"categoryEditor.textFieldPlaceholder" = "Введите название категории";
+"categoryEditor.completeButtonText" = "Готово";
+"categoryEditor.nameStatusText" = "Ограничение 38 символов";

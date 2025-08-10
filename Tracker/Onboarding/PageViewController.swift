@@ -14,9 +14,9 @@ final class PageViewController: UIViewController {
         self.imageName = imageName
         switch imageName {
         case .firstBackgroundName:
-            text = "Отслеживайте только то, что хотите"
+            text = Strings.firstBackgroundName
         case .secondBackgroundName:
-            text = "Даже если это не литры воды и йога"
+            text = Strings.secondBackgroundName
         }
         super.init(nibName: nil, bundle: nil)
     }
@@ -56,5 +56,20 @@ final class PageViewController: UIViewController {
             textLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             textLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
+    }
+}
+
+// MARK: - PageViewController strings
+
+extension PageViewController {
+    private enum Strings {
+        static let firstBackgroundName = NSLocalizedString(
+            "onboarding.firstPageText",
+            comment: "onboarding first page text"
+        )
+        static let secondBackgroundName = NSLocalizedString(
+            "onboarding.secondPageText",
+            comment: "onboarding second page text"
+        )
     }
 }

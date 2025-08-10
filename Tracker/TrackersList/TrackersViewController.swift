@@ -28,14 +28,14 @@ final class TrackersViewController: UIViewController {
     
     private lazy var navigationTitleLabel: UILabel = {
         let titleLabel = UILabel()
-        titleLabel.text = "Трекеры"
+        titleLabel.text = Strings.navigationTitleText
         titleLabel.font = UIFont.systemFont(ofSize: 34, weight: .bold)
         return titleLabel
     }()
     
     private lazy var searchField: UISearchTextField = {
         let searchField = UISearchTextField()
-        searchField.placeholder = "Поиск"
+        searchField.placeholder = Strings.searchFieldPlaceholder
         searchField.font = UIFont.systemFont(ofSize: 17, weight: .regular)
         searchField.delegate = self
         return searchField
@@ -54,7 +54,7 @@ final class TrackersViewController: UIViewController {
     }()
     
     private lazy var placeholder: PlaceholderView = {
-        let placeholder = PlaceholderView(title: "Что будем отслеживать?")
+        let placeholder = PlaceholderView(title: Strings.emptyListPlaceholderText)
         placeholder.isHidden = true
         placeholder.isUserInteractionEnabled = false
         placeholder.translatesAutoresizingMaskIntoConstraints = false
@@ -171,20 +171,20 @@ final class TrackersViewController: UIViewController {
     
     private func showDeleteConfirmation(for indexPath: IndexPath) {
         let alert = UIAlertController(
-            title: "Уверены что хотите удалить трекер?",
+            title: Strings.deleteConfirmationMessage,
             message: nil,
             preferredStyle: .actionSheet
         )
         
         let deleteAction = UIAlertAction(
-            title: "Удалить",
+            title: Strings.confirmDeletingText,
             style: .destructive
         ) { [weak self] _ in
             self?.deleteTracker(index: indexPath)
         }
         
         let cancelAction = UIAlertAction(
-            title: "Отменить",
+            title: Strings.cancelDeletingText,
             style: .cancel
         )
         
@@ -309,10 +309,10 @@ extension TrackersViewController: UICollectionViewDelegate {
             previewProvider: nil,
             actionProvider: { _ in
                 UIMenu(children: [
-                    UIAction(title: "Редактировать") { [weak self] _ in
+                    UIAction(title: Strings.editTrackerText) { [weak self] _ in
                         self?.editTracker(at: indexPath)
                     },
-                    UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
+                    UIAction(title: Strings.deleteTrackerText, attributes: .destructive) { [weak self] _ in
                         self?.showDeleteConfirmation(for: indexPath)
                     }
                 ])
@@ -420,5 +420,51 @@ extension TrackersViewController: TrackerEditingDelegate {
         } catch {
             print("ошибка")
         }
+    }
+}
+
+// MARK: - TrackersViewController strings
+
+extension TrackersViewController {
+    private enum Strings {
+        static let navigationTitleText = NSLocalizedString(
+            "trackers.navigationTitle",
+            comment: "trackers list navigation title"
+        )
+        
+        static let searchFieldPlaceholder = NSLocalizedString(
+            "trackers.searchFieldPlaceholder",
+            comment: "searchField placeholder text"
+        )
+        
+        static let emptyListPlaceholderText = NSLocalizedString(
+            "trackers.EmptyListPlaceholder",
+            comment: "placeholder text for empty list"
+        )
+        
+        static let deleteTrackerText = NSLocalizedString(
+            "trackers.deleteTracker",
+            comment: "context menu deleting tracker"
+        )
+        
+        static let deleteConfirmationMessage = NSLocalizedString(
+            "trackers.deleteConfirmation",
+            comment: "message for tracker deleting confirmation"
+        )
+        
+        static let cancelDeletingText = NSLocalizedString(
+            "trackers.cancelDeleting",
+            comment: "cancel deleting tracker"
+        )
+        
+        static let confirmDeletingText = NSLocalizedString(
+            "trackers.confirmDeleting",
+            comment: "confirm deleting tracker"
+        )
+        
+        static let editTrackerText = NSLocalizedString(
+            "trackers.editTracker",
+            comment: "context menu editing tracker"
+        )
     }
 }

@@ -8,11 +8,6 @@ final class ScheduleViewController: UIViewController {
     
     // MARK: - UI
     
-    private enum Strings {
-        static let navigationTitle = "Расписание"
-        static let completeTitle = "Готово"
-    }
-    
     private lazy var completeButton: UIButton = {
         let button = UIButton()
         button.setTitle(Strings.completeTitle, for: .normal)
@@ -143,4 +138,20 @@ extension ScheduleViewController: UITableViewDataSource {
 
 extension ScheduleViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat { 75 }
+}
+
+// MARK: - ScheduleViewController strings
+
+extension ScheduleViewController {
+    private enum Strings {
+        static let navigationTitle = NSLocalizedString(
+            "schedule.navTitle",
+            comment: "navigation title text"
+        )
+        
+        static let completeTitle = NSLocalizedString(
+            "schedule.completeButtonText",
+            comment: "text for completeButton"
+        )
+    }
 }

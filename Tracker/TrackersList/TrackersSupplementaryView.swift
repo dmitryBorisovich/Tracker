@@ -6,7 +6,7 @@ final class TrackersSupplementaryView: UICollectionReusableView {
         label.font = .systemFont(ofSize: 19, weight: .bold)
         label.textColor = .tBlack
         label.textAlignment = .left
-        label.text = "Образование"
+        label.text = ""
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()

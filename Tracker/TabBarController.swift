@@ -10,14 +10,14 @@ final class TabBarController: UITabBarController {
     private func setupViewControllers() {
         let trackersVC = TrackersViewController()
         trackersVC.tabBarItem = UITabBarItem(
-            title: "Трекеры",
+            title: Strings.trackersTitle,
             image: UIImage(named: "tabTrackers"),
             selectedImage: nil
         )
         
         let statisticsVC = StatisticsViewController()
         statisticsVC.tabBarItem = UITabBarItem(
-            title: "Статистика",
+            title: Strings.statisticTitle,
             image: UIImage(named: "tabStatistics"),
             selectedImage: nil
         )
@@ -32,5 +32,19 @@ final class TabBarController: UITabBarController {
         tabBar.backgroundColor = .tWhite
         tabBar.tintColor = .tBlue
         tabBar.unselectedItemTintColor = .tGray
+    }
+}
+
+extension TabBarController {
+    private enum Strings {
+        static let trackersTitle = NSLocalizedString(
+            "tabBar.trackersTitle",
+            comment: "name for trackers tabBarItem"
+        )
+        
+        static let statisticTitle = NSLocalizedString(
+            "tabBar.statisticTitle",
+            comment: "name for statistic tabBarItem"
+        )
     }
 }

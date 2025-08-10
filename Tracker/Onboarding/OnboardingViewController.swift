@@ -2,9 +2,7 @@ import UIKit
 
 final class OnboardingViewController: UIPageViewController {
     
-    private enum Strings {
-        static let buttonTitle = "Вот это технологии!"
-    }
+    // MARK: - Properties
     
     private lazy var pages: [UIViewController] = [
         PageViewController(imageName: .firstBackgroundName),
@@ -39,6 +37,8 @@ final class OnboardingViewController: UIPageViewController {
     private let userDefaultsService = UserDefaultsService.shared
     private var isTransitionInProgress = false
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         delegate = self
@@ -49,9 +49,10 @@ final class OnboardingViewController: UIPageViewController {
         setupScreen()
     }
     
+    // MARK: - Methods
+    
     private func setupScreen() {
         [startButton, pageControl].forEach { view.addSubview($0) }
-        print("Subviews: \(view.subviews)")
         NSLayoutConstraint.activate([
             startButton.heightAnchor.constraint(equalToConstant: 60),
             startButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -50),
@@ -136,3 +137,13 @@ extension OnboardingViewController: UIPageViewControllerDelegate {
     }
 }
 
+// MARK: - OnboardingViewController strings
+
+extension OnboardingViewController {
+    private enum Strings {
+        static let buttonTitle = NSLocalizedString(
+            "onboarding.button",
+            comment: "onboarding button text"
+        )
+    }
+}
