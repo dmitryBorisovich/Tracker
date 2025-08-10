@@ -5,6 +5,8 @@ enum CategoryError: Error {
     case addError
     case deleteError
     case editError
+    case notLoaded
+    case trackerNotFound
     
     var localizedDescription: String {
         switch self {
@@ -16,6 +18,10 @@ enum CategoryError: Error {
             return "Не удалось удалить категорию"
         case .editError:
             return "Не удалось отредактировать категорию"
+        case .notLoaded:
+            return "Категории не загружены"
+        case .trackerNotFound:
+            return "Трекерр внутри категории не найден"
         }
     }
 }

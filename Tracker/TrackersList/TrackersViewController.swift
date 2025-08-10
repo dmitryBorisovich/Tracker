@@ -163,9 +163,50 @@ final class TrackersViewController: UIViewController {
     private func deleteTracker(index: IndexPath) {
         do {
             try trackerStore.deleteTracker(at: index)
+            reloadPlaceholder()
         } catch {
             print("ошибка")
         }
+    }
+    
+    private func showDeleteConfirmation(for indexPath: IndexPath) {
+        let alert = UIAlertController(
+            title: "Уверены что хотите удалить трекер?",
+            message: nil,
+            preferredStyle: .actionSheet
+        )
+        
+        let deleteAction = UIAlertAction(
+            title: "Удалить",
+            style: .destructive
+        ) { [weak self] _ in
+            self?.deleteTracker(index: indexPath)
+        }
+        
+        let cancelAction = UIAlertAction(
+            title: "Отменить",
+            style: .cancel
+        )
+        
+        alert.addAction(deleteAction)
+        alert.addAction(cancelAction)
+        
+        present(alert, animated: true)
+    }
+    
+    private func editTracker(at indexPath: IndexPath) {
+        guard
+            let trackerToEdit = trackerStore.tracker(at: indexPath),
+            let category = trackerStore.sectionName(indexPath.section)
+        else { return }
+        let trackerEditor = TrackerEditorViewController(
+            tracker: trackerToEdit,
+            category: category
+        )
+        trackerEditor.delegate = self
+        let navigationController = UINavigationController(rootViewController: trackerEditor)
+        navigationController.modalPresentationStyle = .pageSheet
+        present(navigationController, animated: true)
     }
 }
 
@@ -268,8 +309,11 @@ extension TrackersViewController: UICollectionViewDelegate {
             previewProvider: nil,
             actionProvider: { _ in
                 UIMenu(children: [
+                    UIAction(title: "Редактировать") { [weak self] _ in
+                        self?.editTracker(at: indexPath)
+                    },
                     UIAction(title: "Удалить", attributes: .destructive) { [weak self] _ in
-                        self?.deleteTracker(index: indexPath)
+                        self?.showDeleteConfirmation(for: indexPath)
                     }
                 ])
             }
@@ -354,6 +398,27 @@ extension TrackersViewController: TrackerStoreDelegate {
     
     func didUpdate(_ update: TrackerStoreUpdate) {
         trackersCollection.reloadData()
+        reloadPlaceholder()
         //TODO: - Доделать performBatchUpdates
+    }
+}
+
+// MARK: - TrackerEditingDelegate
+
+extension TrackersViewController: TrackerEditingDelegate {
+    func didEditedTracker(_ tracker: Tracker) {
+        do {
+            try trackerStore.editTracker(tracker)
+        } catch {
+            print("ошибка")
+        }
+    }
+    
+    func didChangeCategory(for trackerID: UUID, newCategory: String) {
+        do {
+            try trackerCategoriesStore.updateCategory(for: trackerID, newCategoryName: newCategory)
+        } catch {
+            print("ошибка")
+        }
     }
 }

@@ -117,6 +117,14 @@ final class TrackerStore: NSObject {
         context.delete(tracker)
         try context.save()
     }
+    
+    private func editTracker(_ tracker: TrackerCoreData, data: Tracker) throws {
+        tracker.name = data.name
+        tracker.emoji = data.emoji
+        tracker.color = colorMarshalling.hexString(from: data.color)
+        tracker.schedule = scheduleMarshalling.scheduleString(from: data.schedule ?? [])
+        try context.save()
+    }
 }
 
 extension TrackerStore {
@@ -133,6 +141,14 @@ extension TrackerStore {
         return convertToTracker(coreData)
     }
     
+    func trackerObjectID(for trackerID: UUID) -> NSManagedObjectID? {
+        return fetchedResultsController.fetchedObjects?
+            .first(
+                where: {
+                    $0.id == trackerID
+                })?.objectID
+    }
+    
     func sectionName(_ section: Int) -> String? {
         fetchedResultsController.sections?[section].name
     }
@@ -144,6 +160,14 @@ extension TrackerStore {
     func deleteTracker(at indexPath: IndexPath) throws {
         let tracker = fetchedResultsController.object(at: indexPath)
         try deleteTracker(tracker: tracker)
+    }
+    
+    func editTracker(_ tracker: Tracker) throws {
+        guard let trackerCD = fetchedResultsController.fetchedObjects?.first(
+            where: {
+                $0.id == tracker.id
+            }) else { throw TrackerError.trackerNotFound }
+        try editTracker(trackerCD, data: tracker)
     }
     
     func updatePredicate(filterText: String?, date: Date) {

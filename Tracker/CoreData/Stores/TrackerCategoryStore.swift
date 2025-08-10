@@ -83,6 +83,44 @@ final class TrackerCategoryStore: NSObject {
         }
     }
     
+    func updateCategory(for trackerID: UUID, newCategoryName: String) throws {
+        guard let categories = fetchedResultsController.fetchedObjects else {
+            throw CategoryError.notLoaded
+        }
+        
+        var foundTracker: TrackerCoreData?
+        var currentCategory: TrackerCategoryCoreData?
+        
+        for category in categories {
+            if let tracker = category.trackers?.first(
+                where: { ($0 as? TrackerCoreData)?.id == trackerID }) as? TrackerCoreData {
+                foundTracker = tracker
+                currentCategory = category
+                break
+            }
+        }
+        
+        guard let tracker = foundTracker else {
+            throw CategoryError.trackerNotFound
+        }
+        
+        if currentCategory?.name == newCategoryName {
+            return
+        }
+        
+        if let existingCategory = categories.first(where: { $0.name == newCategoryName }) {
+            currentCategory?.removeFromTrackers(tracker)
+            existingCategory.addToTrackers(tracker)
+        } else {
+            let newCategory = TrackerCategoryCoreData(context: context)
+            newCategory.name = newCategoryName
+            currentCategory?.removeFromTrackers(tracker)
+            newCategory.addToTrackers(tracker)
+        }
+        
+        try context.save()
+    }
+    
     func deleteCategory(at index: IndexPath) throws {
         let categoryToDelete = fetchedResultsController.object(at: index)
         context.delete(categoryToDelete)
