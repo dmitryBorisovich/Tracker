@@ -35,7 +35,7 @@ final class PageViewController: UIViewController {
         let textLabel = UILabel()
         textLabel.text = text
         textLabel.font = .systemFont(ofSize: 32, weight: .bold)
-        textLabel.textColor = .tBlack
+        textLabel.textColor = .staticBlack
         textLabel.numberOfLines = 0
         textLabel.textAlignment = .center
         [imageView, textLabel].forEach {

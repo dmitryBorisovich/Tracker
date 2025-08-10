@@ -13,8 +13,8 @@ final class OnboardingViewController: UIPageViewController {
         let button = UIButton()
         button.setTitle(Strings.buttonTitle, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        button.setTitleColor(.tWhite, for: .normal)
-        button.backgroundColor = .tBlack
+        button.setTitleColor(.staticWhite, for: .normal)
+        button.backgroundColor = .staticBlack
         button.layer.cornerRadius = 16
         button.addTarget(self,
                          action: #selector(startButtonPressed),
@@ -27,7 +27,7 @@ final class OnboardingViewController: UIPageViewController {
         let pageControl = UIPageControl()
         pageControl.numberOfPages = pages.count
         pageControl.currentPage = 0
-        pageControl.currentPageIndicatorTintColor = .tBlack
+        pageControl.currentPageIndicatorTintColor = .staticBlack
         pageControl.pageIndicatorTintColor = .tBlackAlpha30
         
         pageControl.translatesAutoresizingMaskIntoConstraints = false

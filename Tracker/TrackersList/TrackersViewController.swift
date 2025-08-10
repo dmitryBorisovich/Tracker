@@ -10,7 +10,7 @@ final class TrackersViewController: UIViewController {
             target: nil,
             action: #selector(addTrackerButtonPressed)
         )
-        addTrackerButton.tintColor = .black
+        addTrackerButton.tintColor = .tBlack
         addTrackerButton.translatesAutoresizingMaskIntoConstraints = false
         return addTrackerButton
     }()
@@ -19,7 +19,7 @@ final class TrackersViewController: UIViewController {
         let datePicker = UIDatePicker()
         datePicker.datePickerMode = .date
         datePicker.preferredDatePickerStyle = .compact
-        datePicker.locale = Locale(identifier: "ru_RU")
+//        datePicker.locale = Locale(identifier: "ru_RU")
         datePicker.calendar.firstWeekday = 2
         datePicker.translatesAutoresizingMaskIntoConstraints = false
         datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
@@ -37,6 +37,7 @@ final class TrackersViewController: UIViewController {
         let searchField = UISearchTextField()
         searchField.placeholder = Strings.searchFieldPlaceholder
         searchField.font = UIFont.systemFont(ofSize: 17, weight: .regular)
+        
         searchField.delegate = self
         return searchField
     }()
