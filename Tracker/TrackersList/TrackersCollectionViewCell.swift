@@ -162,23 +162,30 @@ final class TrackersCollectionViewCell: UICollectionViewCell {
     }
     
     func changeDaysCounter(for number: Int) {
-        var counterText: String
-        
-        let lastDigit = number % 10
-        let lastTwoDigits = number % 100
-        
-        if lastTwoDigits >= 11 && lastTwoDigits <= 19 {
-            counterText = "\(number) дней"
-        }
-        
-        switch lastDigit {
-        case 1:
-            counterText = "\(number) день"
-        case 2...4:
-            counterText = "\(number) дня"
-        default:
-            counterText = "\(number) дней"
-        }
+//        var counterText: String
+//        
+//        let lastDigit = number % 10
+//        let lastTwoDigits = number % 100
+//        
+//        if lastTwoDigits >= 11 && lastTwoDigits <= 19 {
+//            counterText = "\(number) дней"
+//        }
+//        
+//        switch lastDigit {
+//        case 1:
+//            counterText = "\(number) день"
+//        case 2...4:
+//            counterText = "\(number) дня"
+//        default:
+//            counterText = "\(number) дней"
+//        }
+        let counterText = String.localizedStringWithFormat(
+            NSLocalizedString(
+                "numberOfDays",
+                comment: "number of days the tracker was completed"
+            ),
+            number
+        )
         
         daysCounterLabel.text = counterText
     }
